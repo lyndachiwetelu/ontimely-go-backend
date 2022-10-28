@@ -1,4 +1,4 @@
-FROM golang:1.15.3-alpine AS build_base
+FROM golang:1.18.7-alpine3.16 AS build_base
 
 ENV CGO_ENABLED=1
 ENV GO111MODULE=on
@@ -28,6 +28,8 @@ COPY --from=build_base /src/out/app /app/restapi
 COPY --from=build_base /src/data /app/data
 
 RUN chmod +x restapi
+
+ENV PORT=8080
 
 # This container exposes port 8080 to the outside world
 EXPOSE 8080
