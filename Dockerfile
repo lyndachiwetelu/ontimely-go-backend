@@ -30,7 +30,7 @@ COPY --from=build_base /src/data /app/data
 RUN chmod +x restapi
 
 # This container exposes port 8080 to the outside world
-EXPOSE 3000
+EXPOSE 8080
 
 # Run the binary program produced by `go install`
 ENTRYPOINT ./restapi

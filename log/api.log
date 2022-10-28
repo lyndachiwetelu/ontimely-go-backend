@@ -1,0 +1,3 @@
+::1 - - [28/Oct/2022:01:42:25 +0200] "GET / HTTP/1.1 404 79.368µs " " Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36" " "
+::1 - - [28/Oct/2022:01:42:25 +0200] "GET /images/icons/gear.png HTTP/1.1 404 16.164µs " " Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36" " "
+::1 - - [28/Oct/2022:01:42:25 +0200] "GET /favicon.ico HTTP/1.1 404 20.297µs " " Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36" " "
