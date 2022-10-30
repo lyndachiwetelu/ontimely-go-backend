@@ -75,11 +75,33 @@ func verifyToken(token string) error {
 func buildJwtTokenForUser(user *GoogleUser) (string, error) {
 	secret := []byte(os.Getenv("JWT_SECRET"))
 
-	token := jwt.New(jwt.SigningMethodEdDSA)
+	type OntimelyClaims struct {
+		user GoogleUser `json:"user"`
+		jwt.RegisteredClaims
+	}
+
+	// Create the claims
+	claims := OntimelyClaims{
+		*user,
+		jwt.RegisteredClaims{
+			// A usual scenario is to set the expiration time relative to the current time
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
+			Issuer:    "https://ontimelyapp.com",
+			ID:        "1",
+			Audience:  []string{"ontimelyapp"},
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	ss, err := token.SignedString(secret)
+	fmt.Printf("%v %v", ss, err)
+
+	/*token := jwt.New(jwt.SigningMethodEdDSA)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["exp"] = time.Now().Add(1 * time.Hour)
 	claims["authorized"] = true
-	claims["user"] = user
+	claims["user"] = user*/
+
 	tokenString, err := token.SignedString(secret)
 	if err != nil {
 		return "", err
@@ -90,25 +112,20 @@ func buildJwtTokenForUser(user *GoogleUser) (string, error) {
 
 func parseJwtToken(tokenString string) (*GoogleUser, error) {
 
-	secret := []byte(os.Getenv("GOOGLE_OAUTH_SECRET"))
-	
-	key, err := jwt.ParseRSAPublicKeyFromPEM(secret)
+	key := []byte(os.Getenv("GOOGLE_OAUTH_SECRET"))
 
-	if err != nil {
-		return nil, fmt.Errorf("validate: parse key: %w", err)
-	}
- 
-	token, err := jwt.Parse(tokenString, func(jwtToken *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, jwt.MapClaims{}, func(jwtToken *jwt.Token) (interface{}, error) {
 		if _, ok := jwtToken.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected method: %s", jwtToken.Header["alg"])
 		}
  
 		return key, nil
 	})
+
 	if err != nil {
 		return nil, fmt.Errorf("validate: %w", err)
 	}
- 
+
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		var user GoogleUser
 		user.Email = claims["email"].(string)
