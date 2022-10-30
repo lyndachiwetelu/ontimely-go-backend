@@ -51,6 +51,7 @@ func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
 		if err := json.Unmarshal([]byte(claims["user"].(string)), &user); err != nil {
 			return nil, err
 		}
+		
 		return &user, nil
 
 	} else {

@@ -26,6 +26,13 @@ type GoogleAuthResult struct {
 	credential string
 }
 
+
+type OntimelyClaims struct {
+	user GoogleUser `json:"user"`
+	jwt.RegisteredClaims
+}
+
+
 func GoogleLogin(c *gin.Context) {
 	credential := c.PostForm("credential")
 
@@ -74,12 +81,6 @@ func verifyToken(token string) error {
 
 func buildJwtTokenForUser(user *GoogleUser) (string, error) {
 	secret := []byte(os.Getenv("JWT_SECRET"))
-
-	type OntimelyClaims struct {
-		user GoogleUser `json:"user"`
-		jwt.RegisteredClaims
-	}
-
 	// Create the claims
 	claims := OntimelyClaims{
 		*user,
