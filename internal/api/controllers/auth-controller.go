@@ -14,10 +14,9 @@ type LoggedInUser struct {
 	user GoogleUser
 }
 
-
 func ValidateLoggedIn(c *gin.Context) {
 	var user LoggedInUser
-	
+
 	jwtToken, err := c.Cookie(HttpCookie)
 
 	if err != nil {
@@ -25,15 +24,14 @@ func ValidateLoggedIn(c *gin.Context) {
 	}
 
 	googleUser, err := parseJwtTokenForLoggedInUser(jwtToken)
-	
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, "")
 	}
 
 	user.user = *googleUser
-	c.JSON(200,  gin.H{"data": user})
+	c.JSON(200, gin.H{"data": user})
 }
-
 
 func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
 
@@ -50,7 +48,7 @@ func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		var user GoogleUser
 
-		if err := json.Unmarshal([]byte( claims["user"].(string)), &user); err != nil {
+		if err := json.Unmarshal([]byte(claims["user"].(string)), &user); err != nil {
 			return nil, err
 		}
 		return &user, nil
@@ -59,7 +57,6 @@ func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
 		return nil, err
 	}
 }
-
 
 /*
 func Login(c *gin.Context) {

@@ -1,33 +1,44 @@
 package controllers
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
+	"google.golang.org/api/idtoken"
 )
 
 type GoogleUser struct {
-	Name string `json:"name" binding:"required"`
-	Email string `json:"email" binding:"required"`
-	Profile string `json:"profile" binding:"required"`
-	Given_name string `json:"firstName" binding:"required"`
-	Family_name string `json:"lastName" binding:"required"`
-	Email_verified bool `json:"emailVerified" binding:"required"`
+	Name           string `json:"name" binding:"required"`
+	Email          string `json:"email" binding:"required"`
+	Profile        string `json:"profile" binding:"required"`
+	Given_name     string `json:"firstName" binding:"required"`
+	Family_name    string `json:"lastName" binding:"required"`
+	Email_verified bool   `json:"emailVerified" binding:"required"`
 }
 
 type GoogleAuthResult struct {
 	credential string
-	select_by string
+	select_by  string
 }
 
 func GoogleLogin(c *gin.Context) {
+
 	var authResult GoogleAuthResult
 	err := c.BindJSON(&authResult)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, "")
+	}
+
+	err = verifyToken(authResult.credential)
+
+	if err != nil {
+		c.JSON(http.StatusForbidden, "Invalid gtkn")
 	}
 
 	user, err := parseJwtToken(authResult.credential)
@@ -42,8 +53,20 @@ func GoogleLogin(c *gin.Context) {
 
 	appUrl := os.Getenv("APP_URL")
 
-	c.SetCookie(HttpCookie, jwtForUser, 1*60*60, "/", appUrl, true, true) //set cookie for one hour 
-	c.Redirect(200, fmt.Sprintf("%s/welcome/get-started?step=1&user=%s&obl=%s" ,appUrl, user.Name, jwtForUser))
+	c.SetCookie(HttpCookie, jwtForUser, 1*60*60, "/", appUrl, true, true) //set cookie for one hour
+	c.Redirect(200, fmt.Sprintf("%s/welcome/get-started?step=1&user=%s&obl=%s", appUrl, user.Name, jwtForUser))
+}
+
+func verifyToken(token string) error {
+	ctx := context.Background()
+	audience := os.Getenv("APP_URL")
+
+	_, err := idtoken.Validate(ctx, token, audience)
+	if err != nil {
+		return errors.New("error occurred: invalid_tkn")
+	}
+
+	return nil
 }
 
 func buildJwtTokenForUser(user *GoogleUser) (string, error) {
@@ -81,11 +104,11 @@ func parseJwtToken(tokenString string) (*GoogleUser, error) {
 		user.Profile = claims["profile"].(string)
 		user.Given_name = claims["given_name"].(string)
 		user.Family_name = claims["family_name"].(string)
-		verified, _ :=  claims["email_verified"].(bool)
+		verified, _ := claims["email_verified"].(bool)
 		user.Email_verified = verified
 
 		return &user, nil
 	} else {
 		return nil, err
-	}	
+	}
 }
