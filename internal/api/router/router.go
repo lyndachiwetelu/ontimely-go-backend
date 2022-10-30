@@ -2,13 +2,14 @@ package router
 
 import (
 	"fmt"
+	"io"
+	"os"
+
 	"github.com/antonioalfa22/go-rest-template/internal/api/controllers"
 	"github.com/antonioalfa22/go-rest-template/internal/api/middlewares"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
-	"github.com/swaggo/gin-swagger"
-	"io"
-	"os"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func Setup() *gin.Engine {
@@ -38,6 +39,9 @@ func Setup() *gin.Engine {
 	app.NoRoute(middlewares.NoRouteHandler())
 
 	// Routes
+	// ================== Auth Routes
+	app.POST("/auth/login/google", controllers.GoogleLogin)
+
 	// ================== Login Routes
 	app.POST("/api/login", controllers.Login)
 	app.POST("/api/login/add", controllers.CreateUser)

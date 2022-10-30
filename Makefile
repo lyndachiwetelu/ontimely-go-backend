@@ -8,7 +8,7 @@ build:
 	go build -o bin/restapi cmd/api/main.go
 
 run:
-	go run cmd/api/main.go
+	ENV=DEV go run cmd/api/main.go
 
 test:
 	go test -v ./test/...

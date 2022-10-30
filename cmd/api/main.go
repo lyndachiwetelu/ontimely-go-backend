@@ -1,8 +1,12 @@
 package main
 
 import (
+	"log"
+	"os"
+
 	_ "github.com/antonioalfa22/go-rest-template/docs"
 	"github.com/antonioalfa22/go-rest-template/internal/api"
+	"github.com/joho/godotenv"
 )
 
 // @Golang API REST
@@ -23,5 +27,15 @@ import (
 // @name Authorization
 
 func main() {
+
+	if os.Getenv("ENV") == "DEV" {
+		err := godotenv.Load(".env")
+
+		if err != nil {
+		log.Fatalf("Error loading .env file")
+		}
+
+	}
+
 	api.Run("")
 }
