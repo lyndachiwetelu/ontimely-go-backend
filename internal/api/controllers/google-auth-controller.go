@@ -93,8 +93,8 @@ func buildJwtTokenForUser(user *GoogleUser) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	ss, err := token.SignedString(secret)
-	fmt.Printf("%v %v", ss, err)
+	//ss, err := token.SignedString(secret)
+	//fmt.Printf("%v %v", ss, err)
 
 	/*token := jwt.New(jwt.SigningMethodEdDSA)
 	claims := token.Claims.(jwt.MapClaims)
@@ -114,11 +114,11 @@ func parseJwtToken(tokenString string) (*GoogleUser, error) {
 
 	key := []byte(os.Getenv("GOOGLE_OAUTH_SECRET"))
 
-	token, err := jwt.ParseWithClaims(tokenString, jwt.MapClaims{}, func(jwtToken *jwt.Token) (interface{}, error) {
-		if _, ok := jwtToken.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("unexpected method: %s", jwtToken.Header["alg"])
+	parsedToken, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
- 
+
 		return key, nil
 	})
 
@@ -126,7 +126,12 @@ func parseJwtToken(tokenString string) (*GoogleUser, error) {
 		return nil, fmt.Errorf("validate: %w", err)
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+	if parsedToken == nil {
+		return nil, errors.New("Nil parsed token")
+	}
+
+
+	if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok && parsedToken.Valid {
 		var user GoogleUser
 		user.Email = claims["email"].(string)
 		user.Name = claims["name"].(string)
