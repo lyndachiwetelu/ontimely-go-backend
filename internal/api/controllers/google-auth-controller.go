@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/VojtechVitek/samesite"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"google.golang.org/api/idtoken"
@@ -65,8 +66,26 @@ func GoogleLogin(c *gin.Context) {
 	appDomain := strings.Replace(appUrl, "https://", "", 1)
 	appDomain = strings.Replace(appDomain, "http://", "", 1)
 
-	c.SetCookie(HttpCookie, jwtForUser, 1*60*60, "/", appDomain, true, true) //set cookie for one hour
+	SetCookieHandler(c.Writer, c.Request, appDomain, HttpCookie, jwtForUser)
+
+	//c.SetCookie(HttpCookie, jwtForUser, 1*60*60, "/", appDomain, true, true) //set cookie for one hour
 	c.Redirect(302, fmt.Sprintf("%s/welcome/get-started?step=1&user=%s", appUrl, user.Name))
+}
+
+func SetCookieHandler(w http.ResponseWriter, r *http.Request, domain string, name string, jwtToken string) {
+	cookie := http.Cookie{
+		Name:     "name",
+		Domain:   domain,
+		Path:     "/",
+		Secure:   true,                         // HTTPS only.
+		SameSite: samesite.None(r.UserAgent()), // Set SameSite=None unless browser is incompatible.
+		HttpOnly: true,
+		MaxAge:   1 * 60 * 60,
+		Expires:  time.Now().AddDate(1, 0, 0),
+		Value:    jwtToken,
+	}
+
+	http.SetCookie(w, &cookie)
 }
 
 func verifyToken(token string) (*GoogleUser, error) {
