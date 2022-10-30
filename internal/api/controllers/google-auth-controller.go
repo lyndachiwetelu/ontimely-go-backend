@@ -38,17 +38,18 @@ func GoogleLogin(c *gin.Context) {
 	err = verifyToken(authResult.credential)
 
 	if err != nil {
+		//redirect to error page on client
 		c.JSON(http.StatusForbidden, "Invalid gtkn")
 	}
 
 	user, err := parseJwtToken(authResult.credential)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, "")
+		c.JSON(http.StatusInternalServerError, "tkn server error")
 	}
 
 	jwtForUser, err := buildJwtTokenForUser(user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, "while redirecting")
+		c.JSON(http.StatusInternalServerError, "error while redirecting tkn")
 	}
 
 	appUrl := os.Getenv("APP_URL")
@@ -59,9 +60,10 @@ func GoogleLogin(c *gin.Context) {
 
 func verifyToken(token string) error {
 	ctx := context.Background()
-	audience := os.Getenv("APP_URL")
+	audience := os.Getenv("GOOGLE_CLIENT_ID")
 
 	_, err := idtoken.Validate(ctx, token, audience)
+
 	if err != nil {
 		return errors.New("error occurred: invalid_tkn")
 	}
