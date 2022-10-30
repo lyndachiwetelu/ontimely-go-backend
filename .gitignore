@@ -25,3 +25,5 @@ bin/
 !.vscode/extensions.json
 
 .env*
+
+log/api.log
