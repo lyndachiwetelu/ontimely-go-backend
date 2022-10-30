@@ -90,14 +90,14 @@ func buildJwtTokenForUser(user *GoogleUser) (string, error) {
 
 func parseJwtToken(tokenString string) (*GoogleUser, error) {
 
-	secret := []byte(os.Getenv("GOOGLE_OAUTH_SECRET"))
+	secret := os.Getenv("GOOGLE_OAUTH_SECRET")
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 
-		return secret, nil
+		return &secret, nil
 	})
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
