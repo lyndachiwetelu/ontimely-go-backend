@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -61,9 +62,10 @@ func GoogleLogin(c *gin.Context) {
 	}
 
 	appUrl := os.Getenv("APP_URL")
+	appDomain := strings.Replace(appUrl, "https://", "", 1)
 
-	c.SetCookie(HttpCookie, jwtForUser, 1*60*60, "/", appUrl, true, true) //set cookie for one hour
-	c.Redirect(302, fmt.Sprintf("%s/welcome/get-started?step=1&user=%s&obl=%s", appUrl, user.Name, jwtForUser))
+	c.SetCookie(HttpCookie, jwtForUser, 1*60*60, "/", appDomain, true, true) //set cookie for one hour
+	c.Redirect(302, fmt.Sprintf("%s/welcome/get-started?step=1&user=%s", appUrl, user.Name))
 }
 
 func verifyToken(token string) (*GoogleUser, error) {
