@@ -29,7 +29,7 @@ type GoogleAuthResult struct {
 func GoogleLogin(c *gin.Context) {
 	credential := c.PostForm("credential")
 
-	if credential == ""  {
+	if credential == "" {
 		c.JSON(http.StatusBadRequest, "")
 	}
 
@@ -93,7 +93,7 @@ func parseJwtToken(tokenString string) (*GoogleUser, error) {
 	secret := []byte(os.Getenv("GOOGLE_OAUTH_SECRET"))
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 
