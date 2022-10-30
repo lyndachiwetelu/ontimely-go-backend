@@ -49,21 +49,21 @@ func GoogleLogin(c *gin.Context) {
 
 	//user, err := parseJwtToken(credential)
 
-	/*if err != nil {
-		c.JSON(http.StatusInternalServerError, fmt.Sprintf("tkn server error %v", err))
-		return
-	}*/
-
-	jwtForUser, err := buildJwtTokenForUser(user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, fmt.Sprintf("error while redirecting tkn %v", err))
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("tkn server error %v", err))
 		return
 	}
 
+	/*jwtForUser, err := buildJwtTokenForUser(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("error while redirecting tkn %v", err))
+		return
+	}*/
+
 	appUrl := os.Getenv("APP_URL")
 
-	c.SetCookie(HttpCookie, jwtForUser, 1*60*60, "/", appUrl, true, true) //set cookie for one hour
-	c.Redirect(200, fmt.Sprintf("%s/welcome/get-started?step=1&user=%s&obl=%s", appUrl, user.Name, jwtForUser))
+	c.SetCookie(HttpCookie, "jwtForUser", 1*60*60, "/", appUrl, true, true) //set cookie for one hour
+	c.Redirect(200, fmt.Sprintf("%s/welcome/get-started?step=1&user=%s&obl=%s", appUrl, user.Name, "jwtForUser"))
 }
 
 func verifyToken(token string) (*GoogleUser, error) {
