@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -45,7 +44,7 @@ func GoogleLogin(c *gin.Context) {
 
 	if err != nil {
 		//redirect to error page on client
-		c.JSON(201, fmt.Sprintf("Invalid gtkn %v", err))
+		c.JSON(http.StatusForbidden, fmt.Sprintf("Invalid gtkn %v", err))
 	}
 
 	//user, err := parseJwtToken(credential)
@@ -78,7 +77,11 @@ func verifyToken(token string) (*GoogleUser, error) {
 	}
 
 	var user GoogleUser
-	err = json.Unmarshal([]byte(fmt.Sprint(payload)), &user)
+	user.Email = payload.Claims["email"].(string)
+	user.Name = payload.Claims["name"].(string)
+	user.Family_name = payload.Claims["family_name"].(string)
+	user.Given_name = payload.Claims["given_name"].(string)
+	user.Email_verified = payload.Claims["email_verified"].(bool)
 
 	return &user, nil
 }
