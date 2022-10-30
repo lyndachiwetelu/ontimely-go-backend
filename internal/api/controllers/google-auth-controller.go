@@ -112,6 +112,6 @@ func parseJwtToken(tokenString string) (*GoogleUser, error) {
 
 		return &user, nil
 	} else {
-		return nil, err
+		return nil, errors.New(fmt.Sprintf(" %s, %v", secret, err))
 	}
 }
