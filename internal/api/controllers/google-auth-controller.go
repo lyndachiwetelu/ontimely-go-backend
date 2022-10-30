@@ -27,21 +27,20 @@ type GoogleAuthResult struct {
 }
 
 func GoogleLogin(c *gin.Context) {
+	credential := c.PostForm("credential")
 
-	var authResult GoogleAuthResult
-	err := c.Bind(&authResult)
-	if err != nil {
+	if credential == ""  {
 		c.JSON(http.StatusBadRequest, "")
 	}
 
-	err = verifyToken(authResult.credential)
+	err := verifyToken(credential)
 
 	if err != nil {
 		//redirect to error page on client
 		c.JSON(http.StatusForbidden, "Invalid gtkn")
 	}
 
-	user, err := parseJwtToken(authResult.credential)
+	user, err := parseJwtToken(credential)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, "tkn server error")
 	}
