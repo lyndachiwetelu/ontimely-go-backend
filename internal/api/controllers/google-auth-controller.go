@@ -90,7 +90,7 @@ func buildJwtTokenForUser(user *GoogleUser) (string, error) {
 
 func parseJwtToken(tokenString string) (*GoogleUser, error) {
 
-	secret := os.Getenv("GOOGLE_OAUTH_SECRET")
+	secret := []byte(os.Getenv("GOOGLE_OAUTH_SECRET")}
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
@@ -112,6 +112,6 @@ func parseJwtToken(tokenString string) (*GoogleUser, error) {
 
 		return &user, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf(" %s, %v", secret, err))
+		return nil, err
 	}
 }
