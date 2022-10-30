@@ -45,7 +45,7 @@ func GoogleLogin(c *gin.Context) {
 
 	if err != nil {
 		//redirect to error page on client
-		c.JSON(http.StatusForbidden, fmt.Sprintf("Invalid gtkn %v", err))
+		c.JSON(201, fmt.Sprintf("Invalid gtkn %v", err))
 	}
 
 	//user, err := parseJwtToken(credential)

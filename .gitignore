@@ -26,4 +26,4 @@ bin/
 
 .env*
 
-log/api.log
+log/*.log
