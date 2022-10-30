@@ -63,6 +63,7 @@ func GoogleLogin(c *gin.Context) {
 
 	appUrl := os.Getenv("APP_URL")
 	appDomain := strings.Replace(appUrl, "https://", "", 1)
+	appDomain = strings.Replace(appDomain, "http://", "", 1)
 
 	c.SetCookie(HttpCookie, jwtForUser, 1*60*60, "/", appDomain, true, true) //set cookie for one hour
 	c.Redirect(302, fmt.Sprintf("%s/welcome/get-started?step=1&user=%s", appUrl, user.Name))
@@ -103,15 +104,6 @@ func buildJwtTokenForUser(user *GoogleUser) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	//ss, err := token.SignedString(secret)
-	//fmt.Printf("%v %v", ss, err)
-
-	/*token := jwt.New(jwt.SigningMethodEdDSA)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["exp"] = time.Now().Add(1 * time.Hour)
-	claims["authorized"] = true
-	claims["user"] = user*/
-
 	tokenString, err := token.SignedString(secret)
 	if err != nil {
 		return "", err
