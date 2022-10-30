@@ -115,7 +115,7 @@ func parseJwtToken(tokenString string) (*GoogleUser, error) {
 	key := []byte(os.Getenv("GOOGLE_OAUTH_SECRET"))
 
 	token, err := jwt.ParseWithClaims(tokenString, jwt.MapClaims{}, func(jwtToken *jwt.Token) (interface{}, error) {
-		if _, ok := jwtToken.Method.(*jwt.SigningMethodRSA); !ok {
+		if _, ok := jwtToken.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected method: %s", jwtToken.Header["alg"])
 		}
  
