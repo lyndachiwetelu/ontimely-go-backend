@@ -91,15 +91,24 @@ func buildJwtTokenForUser(user *GoogleUser) (string, error) {
 func parseJwtToken(tokenString string) (*GoogleUser, error) {
 
 	secret := []byte(os.Getenv("GOOGLE_OAUTH_SECRET"))
+	
+	key, err := jwt.ParseRSAPublicKeyFromPEM(secret)
 
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("Unexpected signing method")
+	if err != nil {
+		return nil, fmt.Errorf("validate: parse key: %w", err)
+	}
+ 
+	token, err := jwt.Parse(tokenString, func(jwtToken *jwt.Token) (interface{}, error) {
+		if _, ok := jwtToken.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("unexpected method: %s", jwtToken.Header["alg"])
 		}
-
-		return secret, nil
+ 
+		return key, nil
 	})
-
+	if err != nil {
+		return nil, fmt.Errorf("validate: %w", err)
+	}
+ 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		var user GoogleUser
 		user.Email = claims["email"].(string)
