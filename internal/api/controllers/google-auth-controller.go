@@ -94,10 +94,10 @@ func parseJwtToken(tokenString string) (*GoogleUser, error) {
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("Unexpected signing method %s", secret)
+			return nil, fmt.Errorf("Unexpected signing method")
 		}
 
-		return &secret, nil
+		return secret, nil
 	})
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
