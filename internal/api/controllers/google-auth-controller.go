@@ -24,13 +24,12 @@ type GoogleUser struct {
 
 type GoogleAuthResult struct {
 	credential string
-	select_by  string
 }
 
 func GoogleLogin(c *gin.Context) {
 
 	var authResult GoogleAuthResult
-	err := c.BindJSON(&authResult)
+	err := c.Bind(&authResult)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, "")
 	}
