@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -40,19 +41,19 @@ func GoogleLogin(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, "")
 	}
 
-	err := verifyToken(credential)
+	user, err := verifyToken(credential)
 
 	if err != nil {
 		//redirect to error page on client
-		c.JSON(http.StatusForbidden, "Invalid gtkn")
+		c.JSON(http.StatusForbidden, fmt.Sprintf("Invalid gtkn %v", err))
 	}
 
-	user, err := parseJwtToken(credential)
+	//user, err := parseJwtToken(credential)
 
-	if err != nil {
+	/*if err != nil {
 		c.JSON(http.StatusInternalServerError, fmt.Sprintf("tkn server error %v", err))
 		return
-	}
+	}*/
 
 	jwtForUser, err := buildJwtTokenForUser(user)
 	if err != nil {
@@ -66,17 +67,20 @@ func GoogleLogin(c *gin.Context) {
 	c.Redirect(200, fmt.Sprintf("%s/welcome/get-started?step=1&user=%s&obl=%s", appUrl, user.Name, jwtForUser))
 }
 
-func verifyToken(token string) error {
+func verifyToken(token string) (*GoogleUser, error) {
 	ctx := context.Background()
 	audience := os.Getenv("GOOGLE_CLIENT_ID")
 
-	_, err := idtoken.Validate(ctx, token, audience)
+	payload, err := idtoken.Validate(ctx, token, audience)
 
 	if err != nil {
-		return errors.New("error occurred: invalid_tkn")
+		return nil, errors.New("error occurred: invalid_tkn")
 	}
 
-	return nil
+	var user GoogleUser
+	err = json.Unmarshal([]byte(fmt.Sprint(payload)), &user)
+
+	return &user, nil
 }
 
 func buildJwtTokenForUser(user *GoogleUser) (string, error) {
@@ -109,41 +113,4 @@ func buildJwtTokenForUser(user *GoogleUser) (string, error) {
 	}
 
 	return tokenString, nil
-}
-
-func parseJwtToken(tokenString string) (*GoogleUser, error) {
-
-	key := []byte(os.Getenv("GOOGLE_OAUTH_SECRET"))
-
-	parsedToken, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-
-		return key, nil
-	})
-
-	if err != nil {
-		return nil, fmt.Errorf("validate: %w", err)
-	}
-
-	if parsedToken == nil {
-		return nil, errors.New("Nil parsed token")
-	}
-
-
-	if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok && parsedToken.Valid {
-		var user GoogleUser
-		user.Email = claims["email"].(string)
-		user.Name = claims["name"].(string)
-		user.Profile = claims["profile"].(string)
-		user.Given_name = claims["given_name"].(string)
-		user.Family_name = claims["family_name"].(string)
-		verified, _ := claims["email_verified"].(bool)
-		user.Email_verified = verified
-
-		return &user, nil
-	} else {
-		return nil, err
-	}
 }
