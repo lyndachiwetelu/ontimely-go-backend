@@ -50,7 +50,7 @@ func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		var user GoogleUser
 
-		if err := json.Unmarshal([]byte(fmt.Sprint("%v", claims["user"])), &user); err != nil {
+		if err := json.Unmarshal([]byte( claims["user"].(string)), &user); err != nil {
 			return nil, err
 		}
 		return &user, nil
@@ -58,8 +58,6 @@ func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
 	} else {
 		return nil, err
 	}
-
-	return nil, nil
 }
 
 

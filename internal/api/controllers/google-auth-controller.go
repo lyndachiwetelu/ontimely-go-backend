@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
@@ -77,18 +76,16 @@ func parseJwtToken(tokenString string) (*GoogleUser, error) {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		var user GoogleUser
-		user.Email = fmt.Sprint(claims["email"])
-		user.Name = fmt.Sprint(claims["name"])
-		user.Profile = fmt.Sprint(claims["profile"])
-		user.Given_name = fmt.Sprint(claims["given_name"])
-		user.Family_name = fmt.Sprint(claims["family_name"])
-		verified, _ :=  strconv.ParseBool(fmt.Sprintf("%t", claims["email_verified"]))
+		user.Email = claims["email"].(string)
+		user.Name = claims["name"].(string)
+		user.Profile = claims["profile"].(string)
+		user.Given_name = claims["given_name"].(string)
+		user.Family_name = claims["family_name"].(string)
+		verified, _ :=  claims["email_verified"].(bool)
 		user.Email_verified = verified
 
 		return &user, nil
 	} else {
 		return nil, err
-	}
-
-	return nil, nil
+	}	
 }
