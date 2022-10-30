@@ -41,13 +41,16 @@ func GoogleLogin(c *gin.Context) {
 	}
 
 	user, err := parseJwtToken(credential)
+
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, "tkn server error")
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("tkn server error %v", err))
+		return
 	}
 
 	jwtForUser, err := buildJwtTokenForUser(user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, "error while redirecting tkn")
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("error while redirecting tkn %v", err))
+		return
 	}
 
 	appUrl := os.Getenv("APP_URL")
