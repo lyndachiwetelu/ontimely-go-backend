@@ -41,9 +41,10 @@ func Setup() *gin.Engine {
 	// Routes
 	// ================== Auth Routes
 	app.POST("/auth/login/google", controllers.GoogleLogin)
+	app.POST("/auth/login/validate", controllers.ValidateLoggedIn)
 
 	// ================== Login Routes
-	app.POST("/api/login", controllers.Login)
+	//app.POST("/api/login", controllers.Login)
 	app.POST("/api/login/add", controllers.CreateUser)
 	// ================== Docs Routes
 	app.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

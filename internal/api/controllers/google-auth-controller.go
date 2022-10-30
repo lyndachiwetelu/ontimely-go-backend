@@ -11,12 +11,12 @@ import (
 )
 
 type GoogleUser struct {
-	name string `json:"name" binding:"required"`
-	email string `json:"email" binding:"required"`
-	profile string `json:"profile" binding:"required"`
-	given_name string `json:"firstName" binding:"required"`
-	family_name string `json:"lastName" binding:"required"`
-	email_verified bool `json:"emailVerified" binding:"required"`
+	Name string `json:"name" binding:"required"`
+	Email string `json:"email" binding:"required"`
+	Profile string `json:"profile" binding:"required"`
+	Given_name string `json:"firstName" binding:"required"`
+	Family_name string `json:"lastName" binding:"required"`
+	Email_verified bool `json:"emailVerified" binding:"required"`
 }
 
 type GoogleAuthResult struct {
@@ -43,8 +43,8 @@ func GoogleLogin(c *gin.Context) {
 
 	appUrl := os.Getenv("APP_URL")
 
-	c.SetCookie("ontimely-tkn", jwtForUser, 1*60*60, "/", appUrl, true, true) //set cookie for one hour 
-	c.Redirect(200, fmt.Sprintf("%s/welcome/get-started?step=1&user=%s&obl=%s" ,appUrl, user.name, jwtForUser))
+	c.SetCookie(HttpCookie, jwtForUser, 1*60*60, "/", appUrl, true, true) //set cookie for one hour 
+	c.Redirect(200, fmt.Sprintf("%s/welcome/get-started?step=1&user=%s&obl=%s" ,appUrl, user.Name, jwtForUser))
 }
 
 func buildJwtTokenForUser(user *GoogleUser) (string, error) {
@@ -77,13 +77,13 @@ func parseJwtToken(tokenString string) (*GoogleUser, error) {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		var user GoogleUser
-		user.email = fmt.Sprint(claims["email"])
-		user.name = fmt.Sprint(claims["name"])
-		user.profile = fmt.Sprint(claims["profile"])
-		user.given_name = fmt.Sprint(claims["given_name"])
-		user.family_name = fmt.Sprint(claims["family_name"])
+		user.Email = fmt.Sprint(claims["email"])
+		user.Name = fmt.Sprint(claims["name"])
+		user.Profile = fmt.Sprint(claims["profile"])
+		user.Given_name = fmt.Sprint(claims["given_name"])
+		user.Family_name = fmt.Sprint(claims["family_name"])
 		verified, _ :=  strconv.ParseBool(fmt.Sprintf("%t", claims["email_verified"]))
-		user.email_verified = verified
+		user.Email_verified = verified
 
 		return &user, nil
 	} else {

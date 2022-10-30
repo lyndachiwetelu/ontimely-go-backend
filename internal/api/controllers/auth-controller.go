@@ -1,20 +1,69 @@
 package controllers
 
 import (
-	"errors"
-	"github.com/antonioalfa22/go-rest-template/internal/pkg/persistence"
-	"github.com/antonioalfa22/go-rest-template/pkg/crypto"
-	"github.com/antonioalfa22/go-rest-template/pkg/http-err"
-	"github.com/gin-gonic/gin"
-	"log"
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 )
 
-type LoginInput struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+type LoggedInUser struct {
+	user GoogleUser
 }
 
+
+func ValidateLoggedIn(c *gin.Context) {
+	var user LoggedInUser
+	
+	jwtToken, err := c.Cookie(HttpCookie)
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, "")
+	}
+
+	googleUser, err := parseJwtTokenForLoggedInUser(jwtToken)
+	
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "")
+	}
+
+	user.user = *googleUser
+	c.JSON(200,  gin.H{"data": user})
+}
+
+
+func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
+
+	secret := []byte(os.Getenv("JWT_SECRET"))
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return secret, nil
+	})
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		var user GoogleUser
+
+		if err := json.Unmarshal([]byte(fmt.Sprint("%v", claims["user"])), &user); err != nil {
+			return nil, err
+		}
+		return &user, nil
+
+	} else {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+
+/*
 func Login(c *gin.Context) {
 	var loginInput LoginInput
 	_ = c.BindJSON(&loginInput)
@@ -31,3 +80,4 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusOK, token)
 	}
 }
+*/
