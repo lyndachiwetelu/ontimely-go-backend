@@ -26,7 +26,7 @@ func ValidateLoggedIn(c *gin.Context) {
 	googleUser, err := parseJwtTokenForLoggedInUser(jwtToken)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, "")
+		c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	user.user = *googleUser
