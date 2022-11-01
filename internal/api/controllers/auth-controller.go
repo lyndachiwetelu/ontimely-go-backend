@@ -10,11 +10,11 @@ import (
 )
 
 type LoggedInUser struct {
-	user GoogleUser
+	User GoogleUser `json:"user" binding:"required"` 
 }
 
 func ValidateLoggedIn(c *gin.Context) {
-	var user LoggedInUser
+	var loogedInUser LoggedInUser
 
 	jwtToken, err := c.Cookie(HttpCookie)
 
@@ -28,8 +28,8 @@ func ValidateLoggedIn(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	user.user = *googleUser
-	c.JSON(200, gin.H{"data": user})
+	loogedInUser.User = *googleUser
+	c.JSON(200, gin.H{"data": loogedInUser})
 }
 
 func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
