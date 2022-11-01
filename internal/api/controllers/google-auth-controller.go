@@ -28,12 +28,10 @@ type GoogleAuthResult struct {
 	credential string
 }
 
-
 type OntimelyClaims struct {
-	user GoogleUser `json:"user"`
+	User GoogleUser `json:"user"`
 	jwt.RegisteredClaims
 }
-
 
 func GoogleLogin(c *gin.Context) {
 	credential := c.PostForm("credential")
@@ -75,7 +73,7 @@ func GoogleLogin(c *gin.Context) {
 
 func SetCookieHandler(w http.ResponseWriter, r *http.Request, domain string, name string, jwtToken string) {
 	cookie := http.Cookie{
-		Name:    name,
+		Name:     name,
 		Domain:   domain,
 		Path:     "/",
 		Secure:   true,                         // HTTPS only.

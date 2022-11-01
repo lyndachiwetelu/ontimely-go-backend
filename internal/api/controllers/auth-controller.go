@@ -45,8 +45,7 @@ func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
 	})
 
 	if claims, ok := token.Claims.(OntimelyClaims); ok && token.Valid {
-
-		return &claims.user, nil
+		return &claims.User, nil
 
 	} else {
 		return nil, err
