@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -29,7 +30,7 @@ func ValidateLoggedIn(c *gin.Context) {
 	}
 
 	user.user = *googleUser
-	c.JSON(200, gin.H{"data": user})
+	c.JSON(200, gin.H{"data": googleUser})
 }
 
 func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
@@ -46,11 +47,15 @@ func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
 		return secret, nil
 	})
 
+	if err != nil {
+		return nil, err
+	}
+
 	if claims, ok := token.Claims.(OntimelyClaims); ok && token.Valid {
 		return &claims.User, nil
 
 	} else {
-		return nil, err
+		return nil, errors.New("claims is not okay")
 	}
 }
 
