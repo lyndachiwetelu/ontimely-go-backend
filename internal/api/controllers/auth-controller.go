@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -44,11 +45,19 @@ func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
 		return secret, nil
 	})
 
-	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		var oclaims OntimelyClaims
 
-		myClaims := token.Claims.(*OntimelyClaims)
+		 jsonData, err := json.Marshal(claims)
+		 if err != nil {
+			return nil, err
+		}
+
+		if err := json.Unmarshal(jsonData, &oclaims); err != nil {
+			return nil, err
+		}
 		
-		return &myClaims.user, nil
+		return &oclaims.user, nil
 
 	} else {
 		return nil, err
