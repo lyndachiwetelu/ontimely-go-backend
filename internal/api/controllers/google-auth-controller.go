@@ -62,8 +62,9 @@ func GoogleLogin(c *gin.Context) {
 		return
 	}
 
-	appUrl := os.Getenv("SERVER_URL")
-	appDomain := strings.Replace(appUrl, "https://", "", 1)
+	appUrl := os.Getenv("APP_URL")
+	serverUrl := os.Getenv("SERVER_URL")
+	appDomain := strings.Replace(serverUrl, "https://", "", 1)
 	appDomain = strings.Replace(appDomain, "http://", "", 1)
 
 	SetCookieHandler(c.Writer, c.Request, appDomain, HttpCookie, jwtForUser)
