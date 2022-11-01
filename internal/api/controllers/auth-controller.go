@@ -29,7 +29,7 @@ func ValidateLoggedIn(c *gin.Context) {
 	}
 
 	user.user = *googleUser
-	c.JSON(200, gin.H{"data": googleUser})
+	c.JSON(200, gin.H{"data": user})
 }
 
 func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
