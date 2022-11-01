@@ -10,7 +10,7 @@ func isAllowedOrigin(c *gin.Context) {
 	appUrl := os.Getenv("APP_URL")
 	allowList := map[string]bool{
 		appUrl:                         true,
-		"https ://accounts.google.com": true,
+		"https://accounts.google.com": true,
 	}
 
 	if origin := c.Request.Header.Get("Origin"); allowList[origin] {
