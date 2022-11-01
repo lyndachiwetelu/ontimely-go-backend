@@ -62,7 +62,7 @@ func GoogleLogin(c *gin.Context) {
 		return
 	}
 
-	appUrl := os.Getenv("APP_URL")
+	appUrl := os.Getenv("SERVER_URL")
 	appDomain := strings.Replace(appUrl, "https://", "", 1)
 	appDomain = strings.Replace(appDomain, "http://", "", 1)
 
