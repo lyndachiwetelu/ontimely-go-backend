@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -39,7 +38,7 @@ func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
 
 	claims := &OntimelyClaims{}
 
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
@@ -51,12 +50,8 @@ func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
 		return nil, err
 	}
 
-	if claims, ok := token.Claims.(OntimelyClaims); ok && token.Valid {
-		return &claims.User, nil
+	return &claims.User, nil
 
-	} else {
-		return nil, errors.New("claims is not okay")
-	}
 }
 
 /*
