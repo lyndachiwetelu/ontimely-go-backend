@@ -20,10 +20,10 @@ func Setup() {
 func TestAddUser(t *testing.T) {
 	Setup()
 	user := models.User{
-		Firstname: "Antonio",
-		Lastname:  "Paya",
-		Username:  "antonio",
-		Hash:      "hash",
+		Firstname:    "Antonio",
+		Lastname:     "Paya",
+		Username:     "antonio",
+		PasswordHash: "hash",
 	}
 	s := persistence.GetUserRepository()
 	if err := s.Add(&user); err != nil {

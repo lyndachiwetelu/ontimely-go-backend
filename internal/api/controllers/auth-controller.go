@@ -10,7 +10,7 @@ import (
 )
 
 type LoggedInUser struct {
-	User GoogleUser `json:"user" binding:"required"` 
+	User GoogleUser `json:"user" binding:"required"`
 }
 
 func ValidateLoggedIn(c *gin.Context) {

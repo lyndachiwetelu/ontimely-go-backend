@@ -9,7 +9,7 @@ import (
 func isAllowedOrigin(c *gin.Context) {
 	appUrl := os.Getenv("APP_URL")
 	allowList := map[string]bool{
-		appUrl:                         true,
+		appUrl:                        true,
 		"https://accounts.google.com": true,
 	}
 

@@ -18,3 +18,6 @@ build-docker: build
 
 run-docker: build-docker
 	docker run -p 3000:8080 api-rest
+
+format:
+	gofmt -s -w .

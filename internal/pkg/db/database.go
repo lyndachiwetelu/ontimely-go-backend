@@ -29,16 +29,16 @@ func SetupDB() {
 
 	configuration := config.GetConfig()
 
-	database :=  configuration.Database.Dbname 
+	database := configuration.Database.Dbname
 	username := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
 
 	db, err = gorm.Open("postgres", "host="+host+" port="+port+" user="+username+" dbname="+database+"  sslmode=disable password="+password)
-		if err != nil {
-			fmt.Println("db err: ", err)
-		}
+	if err != nil {
+		fmt.Println("db err: ", err)
+	}
 
 	// Change this to true if you want to see SQL queries
 	db.LogMode(true)
@@ -57,7 +57,8 @@ func migration() {
 	if (!DB.HasTable(&tokens.Token{})) {
 		DB.CreateTable(&tokens.Token{})
 	}
-	
+	DB.Model(&users.User{}).DropColumn("hash")
+
 	DB.Model(&users.User{}).Related(&tokens.Token{})
 	DB.AutoMigrate(&tokens.Token{})
 	DB.AutoMigrate(&users.User{})

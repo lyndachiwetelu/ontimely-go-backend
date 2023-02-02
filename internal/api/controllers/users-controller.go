@@ -65,10 +65,10 @@ func CreateUser(c *gin.Context) {
 	var userInput UserInput
 	_ = c.BindJSON(&userInput)
 	user := models.User{
-		Username:  userInput.Username,
-		Firstname: userInput.Firstname,
-		Lastname:  userInput.Lastname,
-		Hash:      crypto.HashAndSalt([]byte(userInput.Password)),
+		Username:     userInput.Username,
+		Firstname:    userInput.Firstname,
+		Lastname:     userInput.Lastname,
+		PasswordHash: crypto.HashAndSalt([]byte(userInput.Password)),
 		// Role:      models.UserRole{RoleName: userInput.Role},
 	}
 	if err := s.Add(&user); err != nil {
@@ -91,7 +91,7 @@ func UpdateUser(c *gin.Context) {
 		user.Username = userInput.Username
 		user.Lastname = userInput.Lastname
 		user.Firstname = userInput.Firstname
-		user.Hash = crypto.HashAndSalt([]byte(userInput.Password))
+		user.PasswordHash = crypto.HashAndSalt([]byte(userInput.Password))
 		// user.Role = models.UserRole{RoleName: userInput.Role}
 		if err := s.Update(user); err != nil {
 			http_err.NewError(c, http.StatusNotFound, err)

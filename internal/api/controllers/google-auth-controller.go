@@ -4,12 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/VojtechVitek/samesite"
+	"github.com/antonioalfa22/go-rest-template/internal/pkg/models/users"
+	"github.com/antonioalfa22/go-rest-template/internal/pkg/persistence"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"google.golang.org/api/idtoken"
@@ -33,6 +36,19 @@ type OntimelyClaims struct {
 	jwt.RegisteredClaims
 }
 
+func saveGoogleUser(user *GoogleUser) (bool, error) {
+	s := persistence.GetUserRepository()
+	var userToSave users.User
+	userToSave.Firstname = user.Given_name
+	userToSave.Lastname = user.Family_name
+	userToSave.LoginEmail = user.Email
+	userToSave.LastLogin = time.Now()
+	userToSave.LoginProvider = "google"
+	err := s.Add(&userToSave)
+
+	return true, err
+}
+
 func GoogleLogin(c *gin.Context) {
 	credential := c.PostForm("credential")
 
@@ -47,8 +63,6 @@ func GoogleLogin(c *gin.Context) {
 		c.JSON(http.StatusForbidden, fmt.Sprintf("Invalid gtkn %v", err))
 	}
 
-	//user, err := parseJwtToken(credential)
-
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, fmt.Sprintf("tkn server error %v", err))
 		return
@@ -58,6 +72,15 @@ func GoogleLogin(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, fmt.Sprintf("error while redirecting tkn %v", err))
 		return
+	}
+
+	//save user
+
+	_, err = saveGoogleUser(user)
+	if err != nil {
+		log.Println("error occurred while saving user", err)
+	} else {
+		log.Println("a new user just signed up with google")
 	}
 
 	appUrl := os.Getenv("APP_URL")
