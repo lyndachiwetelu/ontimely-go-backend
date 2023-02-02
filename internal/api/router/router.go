@@ -38,28 +38,33 @@ func Setup() *gin.Engine {
 	app.Use(middlewares.CORS())
 	app.NoRoute(middlewares.NoRouteHandler())
 
+	// Health check
+	app.GET("/api/health", controllers.Health)
+
 	// Routes
 	// ================== Auth Routes
 	app.POST("/auth/login/google", controllers.GoogleLogin)
 	app.POST("/auth/login/validate", controllers.ValidateLoggedIn)
 
+	// ================== Api Calendar Auth Routes
+	app.POST("/auth/share-calendar/google", controllers.GoogleLogin)
+	app.POST("/auth/share-calendar/outlook", controllers.GoogleLogin)
+
+	// ================== Calendar Routes
+	app.POST("/calendar/google/add", controllers.GoogleLogin)
+	app.POST("/calendar/outlook/add", controllers.GoogleLogin)
+
 	// ================== Login Routes
-	//app.POST("/api/login", controllers.Login)
 	app.POST("/api/login/add", controllers.CreateUser)
 	// ================== Docs Routes
 	app.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	// ================== User Routes
 	app.GET("/api/users", controllers.GetUsers)
 	app.GET("/api/users/:id", controllers.GetUserById)
 	app.POST("/api/users", controllers.CreateUser)
 	app.PUT("/api/users/:id", controllers.UpdateUser)
 	app.DELETE("/api/users/:id", controllers.DeleteUser)
-	// ================== Tasks Routes
-	app.GET("/api/tasks/:id", controllers.GetTaskById)
-	app.GET("/api/tasks", controllers.GetTasks)
-	app.POST("/api/tasks", controllers.CreateTask)
-	app.PUT("/api/tasks/:id", controllers.UpdateTask)
-	app.DELETE("/api/tasks/:id", controllers.DeleteTask)
 
 	return app
 }

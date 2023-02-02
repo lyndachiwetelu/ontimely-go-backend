@@ -1,2 +1,0 @@
-::1 - - [30/Oct/2022:13:45:45 +0100] "GET / HTTP/1.1 404 45.763µs " " Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36" " "
-::1 - - [30/Oct/2022:13:45:45 +0100] "GET /favicon.ico HTTP/1.1 404 19.914µs " " Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36" " "

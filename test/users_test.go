@@ -24,7 +24,6 @@ func TestAddUser(t *testing.T) {
 		Lastname:  "Paya",
 		Username:  "antonio",
 		Hash:      "hash",
-		Role:      models.UserRole{RoleName: "user"},
 	}
 	s := persistence.GetUserRepository()
 	if err := s.Add(&user); err != nil {

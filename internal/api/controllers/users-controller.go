@@ -69,7 +69,7 @@ func CreateUser(c *gin.Context) {
 		Firstname: userInput.Firstname,
 		Lastname:  userInput.Lastname,
 		Hash:      crypto.HashAndSalt([]byte(userInput.Password)),
-		Role:      models.UserRole{RoleName: userInput.Role},
+		// Role:      models.UserRole{RoleName: userInput.Role},
 	}
 	if err := s.Add(&user); err != nil {
 		http_err.NewError(c, http.StatusBadRequest, err)
@@ -92,7 +92,7 @@ func UpdateUser(c *gin.Context) {
 		user.Lastname = userInput.Lastname
 		user.Firstname = userInput.Firstname
 		user.Hash = crypto.HashAndSalt([]byte(userInput.Password))
-		user.Role = models.UserRole{RoleName: userInput.Role}
+		// user.Role = models.UserRole{RoleName: userInput.Role}
 		if err := s.Update(user); err != nil {
 			http_err.NewError(c, http.StatusNotFound, err)
 			log.Println(err)

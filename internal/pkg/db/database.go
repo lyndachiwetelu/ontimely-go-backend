@@ -2,14 +2,16 @@ package db
 
 import (
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/antonioalfa22/go-rest-template/internal/pkg/config"
-	"github.com/antonioalfa22/go-rest-template/internal/pkg/models/tasks"
+	"github.com/antonioalfa22/go-rest-template/internal/pkg/models/tokens"
 	"github.com/antonioalfa22/go-rest-template/internal/pkg/models/users"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	"time"
 )
 
 var (
@@ -27,32 +29,19 @@ func SetupDB() {
 
 	configuration := config.GetConfig()
 
-	driver := configuration.Database.Driver
-	database := configuration.Database.Dbname
-	username := configuration.Database.Username
-	password := configuration.Database.Password
-	host := configuration.Database.Host
-	port := configuration.Database.Port
+	database :=  configuration.Database.Dbname 
+	username := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
 
-	if driver == "sqlite" { // SQLITE
-		db, err = gorm.Open("sqlite3", "./"+database+".db")
+	db, err = gorm.Open("postgres", "host="+host+" port="+port+" user="+username+" dbname="+database+"  sslmode=disable password="+password)
 		if err != nil {
 			fmt.Println("db err: ", err)
 		}
-	} else if driver == "postgres" { // POSTGRES
-		db, err = gorm.Open("postgres", "host="+host+" port="+port+" user="+username+" dbname="+database+"  sslmode=disable password="+password)
-		if err != nil {
-			fmt.Println("db err: ", err)
-		}
-	} else if driver == "mysql" { // MYSQL
-		db, err = gorm.Open("mysql", username+":"+password+"@tcp("+host+":"+port+")/"+database+"?charset=utf8&parseTime=True&loc=Local")
-		if err != nil {
-			fmt.Println("db err: ", err)
-		}
-	}
 
 	// Change this to true if you want to see SQL queries
-	db.LogMode(false)
+	db.LogMode(true)
 	db.DB().SetMaxIdleConns(configuration.Database.MaxIdleConns)
 	db.DB().SetMaxOpenConns(configuration.Database.MaxOpenConns)
 	db.DB().SetConnMaxLifetime(time.Duration(configuration.Database.MaxLifetime) * time.Second)
@@ -62,9 +51,16 @@ func SetupDB() {
 
 // Auto migrate project models
 func migration() {
+	if (!DB.HasTable(&users.User{})) {
+		DB.CreateTable(&users.User{})
+	}
+	if (!DB.HasTable(&tokens.Token{})) {
+		DB.CreateTable(&tokens.Token{})
+	}
+	
+	DB.Model(&users.User{}).Related(&tokens.Token{})
+	DB.AutoMigrate(&tokens.Token{})
 	DB.AutoMigrate(&users.User{})
-	DB.AutoMigrate(&users.UserRole{})
-	DB.AutoMigrate(&tasks.Task{})
 }
 
 func GetDB() *gorm.DB {
