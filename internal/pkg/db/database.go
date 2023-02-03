@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -35,17 +34,8 @@ func SetupDB() {
 	password := os.Getenv("DB_PASSWORD")
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
-	unixSocketPath := os.Getenv("DB_UNIX_SOCKET")
-	env := os.Getenv("APP_ENV")
 
-	var dbURI string
-	if env != "dev" {
-		dbURI = fmt.Sprintf("%s:%s@unix(/%s)/%s?parseTime=true", username, password, unixSocketPath, database)
-	} else {
-		dbURI = "host=" + host + " port=" + port + " user=" + username + " dbname=" + database + "  sslmode=disable password=" + password
-	}
-
-	log.Println("db uri" + dbURI)
+	dbURI := "host=" + host + " port=" + port + " user=" + username + " dbname=" + database + "  sslmode=disable password=" + password
 
 	db, err = gorm.Open("postgres", dbURI)
 	if err != nil {
