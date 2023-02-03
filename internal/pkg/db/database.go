@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -44,12 +45,14 @@ func SetupDB() {
 		dbURI = "host=" + host + " port=" + port + " user=" + username + " dbname=" + database + "  sslmode=disable password=" + password
 	}
 
+	log.Println("db uri" + dbURI)
+
 	db, err = gorm.Open("postgres", dbURI)
 	if err != nil {
 		fmt.Println("db err: ", err)
 	}
 
-	// Change this to true if you want to see SQL queries
+	// Change this to true if you want to see SQL queries - connection
 	db.LogMode(true)
 	db.DB().SetMaxIdleConns(configuration.Database.MaxIdleConns)
 	db.DB().SetMaxOpenConns(configuration.Database.MaxOpenConns)
