@@ -34,8 +34,17 @@ func SetupDB() {
 	password := os.Getenv("DB_PASSWORD")
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
+	unixSocketPath := os.Getenv("DB_UNIX_SOCKET")
+	env := os.Getenv("APP_ENV")
 
-	db, err = gorm.Open("postgres", "host="+host+" port="+port+" user="+username+" dbname="+database+"  sslmode=disable password="+password)
+	var dbURI string
+	if env != "dev" {
+		dbURI = fmt.Sprintf("%s:%s@unix(/%s)/%s?parseTime=true", username, password, unixSocketPath, database)
+	} else {
+		dbURI = "host=" + host + " port=" + port + " user=" + username + " dbname=" + database + "  sslmode=disable password=" + password
+	}
+
+	db, err = gorm.Open("postgres", dbURI)
 	if err != nil {
 		fmt.Println("db err: ", err)
 	}
@@ -57,7 +66,6 @@ func migration() {
 	if (!DB.HasTable(&tokens.Token{})) {
 		DB.CreateTable(&tokens.Token{})
 	}
-	DB.Model(&users.User{}).DropColumn("hash")
 
 	DB.Model(&users.User{}).Related(&tokens.Token{})
 	DB.AutoMigrate(&tokens.Token{})
