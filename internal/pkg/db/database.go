@@ -49,7 +49,7 @@ func SetupDB() {
 		fmt.Println("db err: ", err)
 	}
 
-	// Change this to true if you want to see SQL queries
+	// Change this to true if you want to see SQL queries logged
 	db.LogMode(true)
 	db.DB().SetMaxIdleConns(configuration.Database.MaxIdleConns)
 	db.DB().SetMaxOpenConns(configuration.Database.MaxOpenConns)
