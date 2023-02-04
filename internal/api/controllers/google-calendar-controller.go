@@ -55,7 +55,7 @@ func RequestPermission(ctx *gin.Context) {
 func HandleGoogleAuthorizeCalendar(ctx *gin.Context) {
 	appUrl := os.Getenv("APP_URL")
 	handleGoogleAuthorize(ctx)
-	ctx.Redirect(200, appUrl)
+	ctx.Redirect(302, appUrl)
 }
 
 func handleGoogleAuthorize(ctx *gin.Context) (error, bool) {
@@ -64,6 +64,7 @@ func handleGoogleAuthorize(ctx *gin.Context) (error, bool) {
 
 	if code == "" {
 		err := errors.New("no code")
+		log.Fatalf("Unable to read code from request: %v %v", err, ctx.Request.URL.Query())
 		return err, false
 	}
 
