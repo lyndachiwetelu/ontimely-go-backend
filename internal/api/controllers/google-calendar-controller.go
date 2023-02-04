@@ -64,7 +64,7 @@ func handleGoogleAuthorize(ctx *gin.Context) (error, bool) {
 
 	if code == "" {
 		err := errors.New("no code")
-		log.Fatalf("Unable to read code from request: %v %v", err, ctx.Request.URL.Query())
+		//log.Fatalf("Unable to read code from request: %v %v", err, ctx.Request.URL.Query())
 		return err, false
 	}
 
@@ -75,7 +75,7 @@ func handleGoogleAuthorize(ctx *gin.Context) (error, bool) {
 		log.Fatalf("Unable to retrieve token from web: %v", err)
 	}
 
-	fmt.Printf("%v", tok)
+	fmt.Printf("USER TOKEN: %v", tok)
 	//save token for logged in user
 	// put tok in a user token
 	return nil, true
