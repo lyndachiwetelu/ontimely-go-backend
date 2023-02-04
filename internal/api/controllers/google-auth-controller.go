@@ -78,11 +78,15 @@ func GoogleLogin(c *gin.Context) {
 
 	//save user
 
-	_, err = saveGoogleUser(user)
+	saved, err := saveGoogleUser(user)
 	if err != nil {
-		log.Println("error occurred while saving user", err)
+		log.Printf("error occurred while saving user %v", err)
 	} else {
 		log.Println("a new user just signed up with google")
+	}
+
+	if (!saved) {
+		log.Println("did not save user o__o")
 	}
 
 	appUrl := os.Getenv("APP_URL")

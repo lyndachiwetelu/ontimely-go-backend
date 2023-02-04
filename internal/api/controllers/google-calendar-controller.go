@@ -22,6 +22,8 @@ import (
 	"google.golang.org/api/option"
 )
 
+const credentialsPath = "calendar-credentials.json"
+
 type GoogleCalendar struct {
 	Name  string `json:"name" binding:"required"`
 	Email string `json:"email" binding:"required"`
@@ -54,7 +56,7 @@ func getClientForUser(config *oauth2.Config, tok *oauth2.Token) *http.Client {
 }
 
 func RequestPermission(ctx *gin.Context, userID uuid.UUID) {
-	b, err := os.ReadFile("calendar-credentials.json")
+	b, err := os.ReadFile(credentialsPath)
 	if err != nil {
 		//remove fatals
 		log.Fatalf("Unable to read client secret file: %v", err)
@@ -85,7 +87,7 @@ func HandleGoogleAuthorizeCalendar(ctx *gin.Context) {
 }
 
 func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, error) {
-	b, _ := os.ReadFile("calendar-credentials.json")
+	b, _ := os.ReadFile(credentialsPath)
 	code := ctx.Query("code")
 	state := ctx.Query("state")
 
@@ -141,7 +143,7 @@ func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, error) {
 func GetCalendarInformation(ctx *gin.Context, tok *oauth2.Token) {
 	//get user token, request calendar info
 
-	b, err := os.ReadFile("calendar-credentials.json")
+	b, err := os.ReadFile(credentialsPath)
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
