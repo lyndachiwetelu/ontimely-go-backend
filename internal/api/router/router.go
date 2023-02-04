@@ -51,7 +51,8 @@ func Setup() *gin.Engine {
 	app.POST("/auth/share-calendar/outlook", controllers.GoogleLogin)
 
 	// ================== Calendar Routes
-	app.POST("/calendar/google/add", controllers.GoogleLogin)
+	app.POST("/calendar/google/add", controllers.ConnectToCalendar)
+	app.GET("/calendar/authorize/google", controllers.ConnectToCalendar)
 	app.POST("/calendar/outlook/add", controllers.GoogleLogin)
 
 	// ================== Login Routes
