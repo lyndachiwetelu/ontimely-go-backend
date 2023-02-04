@@ -29,8 +29,7 @@ func ConnectGoogleCalendar(ctx *gin.Context) {
 	RequestPermission(ctx)
 }
 
-func getClientForUser(config *oauth2.Config, userID int) *http.Client {
-	tok := &oauth2.Token{}
+func getClientForUser(config *oauth2.Config, tok *oauth2.Token) *http.Client {
 	// get the saved token for the user
 	return config.Client(context.Background(), tok)
 }
@@ -54,18 +53,22 @@ func RequestPermission(ctx *gin.Context) {
 
 func HandleGoogleAuthorizeCalendar(ctx *gin.Context) {
 	appUrl := os.Getenv("APP_URL")
-	handleGoogleAuthorize(ctx)
+	token, err := handleGoogleAuthorize(ctx)
+	if err != nil {
+		log.Fatalf("Unable to get user token %v", err)
+	}
+	GetCalendarInformation(ctx, token)
 	ctx.Redirect(302, appUrl)
 }
 
-func handleGoogleAuthorize(ctx *gin.Context) (error, bool) {
+func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, error) {
 	b, _ := os.ReadFile("calendar-credentials.json")
 	code := ctx.Query("code")
 
 	if code == "" {
 		err := errors.New("no code")
 		//log.Fatalf("Unable to read code from request: %v %v", err, ctx.Request.URL.Query())
-		return err, false
+		return nil, err
 	}
 
 	config, _ := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
@@ -76,12 +79,12 @@ func handleGoogleAuthorize(ctx *gin.Context) (error, bool) {
 	}
 
 	fmt.Printf("USER TOKEN: %v", tok)
-	//save token for logged in user
+	//save token for logged in user and return it
 	// put tok in a user token
-	return nil, true
+	return tok, nil
 }
 
-func GetCalendarInformation(ctx *gin.Context) {
+func GetCalendarInformation(ctx *gin.Context, tok *oauth2.Token) {
 	//get user token, request calendar info
 
 	b, err := os.ReadFile("calendar-credentials.json")
@@ -90,7 +93,7 @@ func GetCalendarInformation(ctx *gin.Context) {
 	}
 
 	config, _ := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
-	client := getClientForUser(config, 1)
+	client := getClientForUser(config, tok)
 
 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
@@ -103,6 +106,7 @@ func GetCalendarInformation(ctx *gin.Context) {
 	if err != nil {
 		log.Fatalf("Unable to retrieve next ten of the user's events: %v", err)
 	}
+
 	fmt.Println("Upcoming events:")
 	if len(events.Items) == 0 {
 		fmt.Println("No upcoming events found.")
