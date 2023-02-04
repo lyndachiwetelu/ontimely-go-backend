@@ -139,6 +139,7 @@ func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, error) {
 	userToken.HashedToken = crypto.EncryptString(tok.AccessToken, encKey)
 	userToken.HashedRefreshToken = crypto.EncryptString(tok.RefreshToken, encKey)
 	userToken.Expiry = tok.Expiry
+	userToken.ID = uuid.New()
 
 	err = t.Add(&userToken)
 	if err != nil {
