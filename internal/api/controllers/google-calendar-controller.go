@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+
 	// "encoding/json"
 	"errors"
 	"fmt"
@@ -10,7 +11,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/antonioalfa22/go-rest-template/internal/pkg/models/tokens"
+	"github.com/antonioalfa22/go-rest-template/internal/pkg/persistence"
+	"github.com/antonioalfa22/go-rest-template/pkg/crypto"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	calendar "google.golang.org/api/calendar/v3"
@@ -23,10 +28,23 @@ type GoogleCalendar struct {
 }
 
 func ConnectGoogleCalendar(ctx *gin.Context) {
-	// request user permission with your credential - redirect to google
-	// store token
-	// use token in request
-	RequestPermission(ctx)
+	appUrl := os.Getenv("APP_URL")
+	// check login
+	status, loggedInUser, err := CheckUserThatIsLoggedIn(ctx)
+	if err != nil || status != http.StatusOK {
+		log.Printf("unable to read logged in user: %v", err)
+		ctx.Redirect(302, appUrl)
+	}
+
+	u := persistence.GetUserRepository()
+	user, err := u.GetByEmail(loggedInUser.User.Email)
+
+	if err != nil {
+		log.Printf("unable to read logged in user details from db: %v", err)
+		ctx.Redirect(302, appUrl)
+	}
+
+	RequestPermission(ctx, user.ID)
 }
 
 func getClientForUser(config *oauth2.Config, tok *oauth2.Token) *http.Client {
@@ -34,7 +52,7 @@ func getClientForUser(config *oauth2.Config, tok *oauth2.Token) *http.Client {
 	return config.Client(context.Background(), tok)
 }
 
-func RequestPermission(ctx *gin.Context) {
+func RequestPermission(ctx *gin.Context, userID uuid.UUID) {
 	b, err := os.ReadFile("calendar-credentials.json")
 	if err != nil {
 		//remove fatals
@@ -47,27 +65,36 @@ func RequestPermission(ctx *gin.Context) {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
 
-	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+	userIDString := crypto.EncryptString(userID.String(), os.Getenv("ENCRYPTION_KEY"))
+	authURL := config.AuthCodeURL(userIDString, oauth2.AccessTypeOffline)
 	ctx.Redirect(302, authURL)
 }
 
 func HandleGoogleAuthorizeCalendar(ctx *gin.Context) {
 	appUrl := os.Getenv("APP_URL")
 	token, err := handleGoogleAuthorize(ctx)
+
 	if err != nil {
-		log.Fatalf("Unable to get user token %v", err)
+		log.Printf("unable to get user token %v", err)
+		ctx.Redirect(302, appUrl)
 	}
+
 	GetCalendarInformation(ctx, token)
-	ctx.Redirect(302, appUrl)
+	ctx.Redirect(302, appUrl+"/user/dashboard/calendar/connected")
 }
 
 func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, error) {
 	b, _ := os.ReadFile("calendar-credentials.json")
 	code := ctx.Query("code")
+	state := ctx.Query("state")
 
 	if code == "" {
 		err := errors.New("no code")
-		//log.Fatalf("Unable to read code from request: %v %v", err, ctx.Request.URL.Query())
+		return nil, err
+	}
+
+	if state == "" {
+		err := errors.New("no state parameter. invalid request")
 		return nil, err
 	}
 
@@ -75,12 +102,38 @@ func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, error) {
 
 	tok, err := config.Exchange(context.TODO(), code)
 	if err != nil {
-		log.Fatalf("Unable to retrieve token from web: %v", err)
+		log.Printf("Unable to retrieve token from web: %v", err)
+		return nil, err
 	}
 
-	fmt.Printf("USER TOKEN: %v", tok)
-	//save token for logged in user and return it
-	// put tok in a user token
+	u := persistence.GetUserRepository()
+	userIDStr := crypto.DecryptString(state, os.Getenv("ENCRYPTION_KEY"))
+	userId, err := uuid.Parse(userIDStr)
+
+	if err != nil {
+		log.Printf("uuid parsing error: %v", err)
+		return nil, err
+	}
+
+	user, err := u.Get(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	t := persistence.GetTokenRepository()
+	encKey := os.Getenv("ENCRYPTION_KEY")
+	var userToken tokens.Token
+	userToken.TokenType = fmt.Sprintf("Google-Calendar-Access-%s", tok.TokenType)
+	userToken.UserID = user.ID
+	userToken.HashedToken = crypto.EncryptString(tok.AccessToken, encKey)
+	userToken.HashedRefreshToken = crypto.EncryptString(tok.RefreshToken, encKey)
+	userToken.Expiry = tok.Expiry
+
+	err = t.Add(&userToken)
+	if err != nil {
+		log.Printf("Unable to save token for user: %v", err)
+	}
+
 	return tok, nil
 }
 
@@ -121,95 +174,3 @@ func GetCalendarInformation(ctx *gin.Context, tok *oauth2.Token) {
 	}
 
 }
-
-// Retrieve a token, saves the token, then returns the generated client.
-// func getClient(config *oauth2.Config) *http.Client {
-// 	// The file token.json stores the user's access and refresh tokens, and is
-// 	// created automatically when the authorization flow completes for the first
-// 	// time.
-// 	tokFile := "token.json"
-// 	tok, err := tokenFromFile(tokFile)
-// 	if err != nil {
-// 		tok = getTokenFromWeb(config)
-// 		saveToken(tokFile, tok)
-// 	}
-// 	return config.Client(context.Background(), tok)
-// }
-
-// Request a token from the web, then returns the retrieved token.
-// func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
-// 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-// 	fmt.Printf("Go to the following link in your browser then type the "+
-// 		"authorization code: \n%v\n", authURL)
-
-// 	var authCode string
-// 	if _, err := fmt.Scan(&authCode); err != nil {
-// 		log.Fatalf("Unable to read authorization code: %v", err)
-// 	}
-
-// 	tok, err := config.Exchange(context.TODO(), authCode)
-// 	if err != nil {
-// 		log.Fatalf("Unable to retrieve token from web: %v", err)
-// 	}
-// 	return tok
-// }
-
-// Retrieves a token from a local file.
-// func tokenFromFile(file string) (*oauth2.Token, error) {
-// 	f, err := os.Open(file)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer f.Close()
-// 	tok := &oauth2.Token{}
-// 	err = json.NewDecoder(f).Decode(tok)
-// 	return tok, err
-// }
-
-// Saves a token to a file path.
-// func saveToken(path string, token *oauth2.Token) {
-// 	fmt.Printf("Saving credential file to: %s\n", path)
-// 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-// 	if err != nil {
-// 		log.Fatalf("Unable to cache oauth token: %v", err)
-// 	}
-// 	defer f.Close()
-// 	json.NewEncoder(f).Encode(token)
-// }
-
-// func ConnectToCalendar(ctx *gin.Context) {
-// 	b, err := os.ReadFile("calendar-credentials.json")
-// 	if err != nil {
-// 		log.Fatalf("Unable to read client secret file: %v", err)
-// 	}
-
-// 	config, err := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
-// 	if err != nil {
-// 		log.Fatalf("Unable to parse client secret file to config: %v", err)
-// 	}
-// 	client := getClient(config)
-
-// 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
-// 	if err != nil {
-// 		log.Fatalf("Unable to retrieve Calendar client: %v", err)
-// 	}
-
-// 	t := time.Now().Format(time.RFC3339)
-// 	events, err := srv.Events.List("primary").ShowDeleted(false).
-// 		SingleEvents(true).TimeMin(t).MaxResults(10).OrderBy("startTime").Do()
-// 	if err != nil {
-// 		log.Fatalf("Unable to retrieve next ten of the user's events: %v", err)
-// 	}
-// 	fmt.Println("Upcoming events:")
-// 	if len(events.Items) == 0 {
-// 		fmt.Println("No upcoming events found.")
-// 	} else {
-// 		for _, item := range events.Items {
-// 			date := item.Start.DateTime
-// 			if date == "" {
-// 				date = item.Start.Date
-// 			}
-// 			fmt.Printf("%v (%v)\n", item.Summary, date)
-// 		}
-// 	}
-// }

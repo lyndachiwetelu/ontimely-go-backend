@@ -3,7 +3,7 @@ package persistence
 import (
 	"github.com/antonioalfa22/go-rest-template/internal/pkg/db"
 	models "github.com/antonioalfa22/go-rest-template/internal/pkg/models/users"
-	"strconv"
+	"github.com/google/uuid"
 )
 
 type UserRepository struct{}
@@ -17,11 +17,22 @@ func GetUserRepository() *UserRepository {
 	return userRepository
 }
 
-func (r *UserRepository) Get(id string) (*models.User, error) {
+func (r *UserRepository) Get(id uuid.UUID) (*models.User, error) {
 	var user models.User
 	where := models.User{}
-	where.ID, _ = strconv.ParseUint(id, 10, 64)
+	where.ID = id
 	_, err := First(&where, &user, []string{"Role"})
+	if err != nil {
+		return nil, err
+	}
+	return &user, err
+}
+
+func (r *UserRepository) GetByEmail(email string) (*models.User, error) {
+	var user models.User
+	where := models.User{}
+	where.LoginEmail = email
+	_, err := First(&where, &user, []string{})
 	if err != nil {
 		return nil, err
 	}

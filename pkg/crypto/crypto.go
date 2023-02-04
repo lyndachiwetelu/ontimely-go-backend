@@ -1,13 +1,79 @@
 package crypto
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"fmt"
 	config2 "github.com/antonioalfa22/go-rest-template/internal/pkg/config"
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
+	"io"
 	"log"
 	"time"
 )
+
+func encrypt(plaintext []byte, key []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
+	iv := ciphertext[:aes.BlockSize]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return nil, err
+	}
+
+	stream := cipher.NewCFBEncrypter(block, iv)
+	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
+
+	return ciphertext, nil
+}
+
+func decrypt(ciphertext []byte, key []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ciphertext) < aes.BlockSize {
+		return nil, fmt.Errorf("ciphertext too short")
+	}
+
+	iv := ciphertext[:aes.BlockSize]
+	ciphertext = ciphertext[aes.BlockSize:]
+
+	stream := cipher.NewCFBDecrypter(block, iv)
+	stream.XORKeyStream(ciphertext, ciphertext)
+
+	return ciphertext, nil
+}
+
+func EncryptString(str string, withKey string) string {
+	// Encrypt the access token
+	plaintext := []byte(str)
+	key := []byte(withKey)
+	ciphertext, err := encrypt(plaintext, key)
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	return string(ciphertext)
+}
+
+func DecryptString(str string, withKey string) string {
+	ciphertext := []byte(str)
+	key := []byte(withKey)
+	decrypted, err := decrypt(ciphertext, key)
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	return string(decrypted)
+}
 
 func HashAndSalt(pwd []byte) string {
 	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)

@@ -54,15 +54,18 @@ func SetupDB() {
 // Auto migrate project models
 func migration() {
 	if (!DB.HasTable(&users.User{})) {
+		DB.DropTable(&users.User{})
 		DB.CreateTable(&users.User{})
 	}
 	if (!DB.HasTable(&tokens.Token{})) {
+		DB.DropTable(&users.User{})
 		DB.CreateTable(&tokens.Token{})
 	}
 
-	DB.Model(&users.User{}).Related(&tokens.Token{})
 	DB.AutoMigrate(&tokens.Token{})
 	DB.AutoMigrate(&users.User{})
+	DB.Model(&users.User{}).Related(&tokens.Token{})
+
 }
 
 func GetDB() *gorm.DB {

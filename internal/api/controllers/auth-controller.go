@@ -13,22 +13,33 @@ type LoggedInUser struct {
 	User GoogleUser `json:"user" binding:"required"`
 }
 
-func ValidateLoggedIn(c *gin.Context) {
+func CheckUserThatIsLoggedIn(c *gin.Context) (int, *LoggedInUser, error) {
 	var loogedInUser LoggedInUser
 
 	jwtToken, err := c.Cookie(HttpCookie)
 
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, "")
+		return http.StatusUnauthorized, nil, nil
 	}
 
 	googleUser, err := parseJwtTokenForLoggedInUser(jwtToken)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		return http.StatusInternalServerError, nil, err
 	}
 
 	loogedInUser.User = *googleUser
+
+	return http.StatusOK, &loogedInUser, nil
+}
+
+func ValidateLoggedIn(c *gin.Context) {
+	status, loogedInUser, err := CheckUserThatIsLoggedIn(c)
+
+	if err != nil {
+		c.JSON(status, "")
+	}
+
 	c.JSON(200, gin.H{"data": loogedInUser})
 }
 
@@ -40,7 +51,7 @@ func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
 
 	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
 		return secret, nil
