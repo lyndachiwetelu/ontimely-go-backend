@@ -78,6 +78,8 @@ func RequestPermission(ctx *gin.Context, userID uuid.UUID) {
 	var response ConnectGoogleCalendarResponse
 	response.Url = authURL
 
+	log.Printf("response url is returned %s", authURL)
+
 	ctx.JSON(http.StatusOK, gin.H{"data": response})
 }
 
