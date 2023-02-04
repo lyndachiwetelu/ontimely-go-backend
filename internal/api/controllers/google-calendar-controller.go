@@ -37,7 +37,8 @@ func ConnectGoogleCalendar(ctx *gin.Context) {
 	}
 
 	u := persistence.GetUserRepository()
-	user, err := u.GetByEmail(loggedInUser.User.Email)
+	userValue := *loggedInUser
+	user, err := u.GetByEmail(userValue.User.Email)
 
 	if err != nil {
 		log.Printf("unable to read logged in user details from db: %v", err)
