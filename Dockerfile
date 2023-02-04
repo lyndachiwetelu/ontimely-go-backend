@@ -26,6 +26,7 @@ WORKDIR /app
 
 COPY --from=build_base /src/out/app /app/restapi
 COPY --from=build_base /src/data /app/data
+COPY --from=build_base /src/calendar-credentials.json /app/calendar-credentials.json
 
 RUN chmod +x restapi
 
