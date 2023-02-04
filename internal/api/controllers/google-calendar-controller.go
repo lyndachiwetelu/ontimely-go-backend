@@ -30,7 +30,7 @@ type GoogleCalendar struct {
 }
 
 type ConnectGoogleCalendarResponse struct {
-	url string `json:"url" binding:"required"`
+	Url string `json:"url" binding:"required"`
 }
 
 func ConnectGoogleCalendar(ctx *gin.Context) {
@@ -76,7 +76,7 @@ func RequestPermission(ctx *gin.Context, userID uuid.UUID) {
 	authURL := config.AuthCodeURL(userIDString, oauth2.AccessTypeOffline)
 
 	var response ConnectGoogleCalendarResponse
-	response.url = authURL
+	response.Url = authURL
 
 	ctx.JSON(http.StatusOK, gin.H{"data": response})
 }
