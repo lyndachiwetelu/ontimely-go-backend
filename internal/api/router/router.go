@@ -52,7 +52,7 @@ func Setup() *gin.Engine {
 
 	// ================== Calendar Routes
 	app.POST("/calendar/google/add", controllers.ConnectToCalendar)
-	app.POST("/calendar/authorize/google", controllers.ConnectToCalendar)
+	app.GET("/calendar/authorize/google", controllers.ConnectToCalendar)
 	app.POST("/calendar/outlook/add", controllers.GoogleLogin)
 
 	// ================== Login Routes
