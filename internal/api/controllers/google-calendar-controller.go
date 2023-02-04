@@ -29,6 +29,10 @@ type GoogleCalendar struct {
 	Email string `json:"email" binding:"required"`
 }
 
+type ConnectGoogleCalendarResponse struct {
+	url string `json:"url" binding:"required"`
+}
+
 func ConnectGoogleCalendar(ctx *gin.Context) {
 	appUrl := os.Getenv("APP_URL")
 	// check login
@@ -70,7 +74,11 @@ func RequestPermission(ctx *gin.Context, userID uuid.UUID) {
 
 	userIDString := crypto.EncryptString(userID.String(), os.Getenv("ENCRYPTION_KEY"))
 	authURL := config.AuthCodeURL(userIDString, oauth2.AccessTypeOffline)
-	ctx.Redirect(302, authURL)
+
+	var response ConnectGoogleCalendarResponse
+	response.url = authURL
+
+	ctx.JSON(http.StatusOK, gin.H{"data": response})
 }
 
 func HandleGoogleAuthorizeCalendar(ctx *gin.Context) {

@@ -44,6 +44,7 @@ func ValidateLoggedIn(c *gin.Context) {
 	if loogedInUser == nil {
 		log.Println("could not retrieve logged in user")
 		c.JSON(500, "")
+		return
 	}
 
 	c.JSON(200, gin.H{"data": *loogedInUser})
