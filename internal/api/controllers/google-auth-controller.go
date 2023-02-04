@@ -15,6 +15,7 @@ import (
 	"github.com/antonioalfa22/go-rest-template/internal/pkg/persistence"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 	"google.golang.org/api/idtoken"
 )
 
@@ -39,6 +40,7 @@ type OntimelyClaims struct {
 func saveGoogleUser(user *GoogleUser) (bool, error) {
 	s := persistence.GetUserRepository()
 	var userToSave users.User
+	userToSave.ID = uuid.New()
 	userToSave.Firstname = user.Given_name
 	userToSave.Lastname = user.Family_name
 	userToSave.LoginEmail = user.Email
