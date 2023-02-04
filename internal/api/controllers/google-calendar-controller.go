@@ -36,6 +36,7 @@ func getClientForUser(config *oauth2.Config, userID int) *http.Client {
 }
 
 func RequestPermission(ctx *gin.Context) {
+	fmt.Println(os.Getwd())
 	b, err := os.ReadFile("calendar-credentials.json")
 	if err != nil {
 		//remove fatals
