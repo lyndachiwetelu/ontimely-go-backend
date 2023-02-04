@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -40,7 +41,12 @@ func ValidateLoggedIn(c *gin.Context) {
 		c.JSON(status, "")
 	}
 
-	c.JSON(200, gin.H{"data": loogedInUser})
+	if loogedInUser == nil {
+		log.Println("could not retrieve logged in user")
+		c.JSON(500, "")
+	}
+
+	c.JSON(200, gin.H{"data": *loogedInUser})
 }
 
 func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {

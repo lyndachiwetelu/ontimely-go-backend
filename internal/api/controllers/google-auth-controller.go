@@ -85,7 +85,7 @@ func GoogleLogin(c *gin.Context) {
 		log.Println("a new user just signed up with google")
 	}
 
-	if (!saved) {
+	if !saved {
 		log.Println("did not save user o__o")
 	}
 
