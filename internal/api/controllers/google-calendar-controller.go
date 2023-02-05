@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -100,13 +101,17 @@ func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, error) {
 	b, _ := os.ReadFile(credentialsPath)
 	code := ctx.Query("code")
 	state := ctx.Query("state")
+	decodedState, err := url.QueryUnescape(state)
+	if err != nil {
+		fmt.Printf("decoding state error %v", err)
+	}
 
 	if code == "" {
 		err := errors.New("no code")
 		return nil, err
 	}
 
-	if state == "" {
+	if decodedState == "" {
 		err := errors.New("no state parameter. invalid request")
 		return nil, err
 	}
