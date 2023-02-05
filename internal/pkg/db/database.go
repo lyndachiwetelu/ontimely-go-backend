@@ -53,11 +53,6 @@ func SetupDB() {
 
 // Auto migrate project models
 func migration() {
-	if (DB.HasTable(&users.User{})) {
-		DB.DropTable(&tokens.Token{})
-		DB.DropTable(&users.User{})
-	}
-
 	if (!DB.HasTable(&users.User{})) {
 		DB.CreateTable(&users.User{})
 	}
