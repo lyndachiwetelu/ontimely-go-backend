@@ -137,6 +137,24 @@ func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, error) {
 	if err != nil {
 		return nil, err
 	}
+	// checkLogged in user is the same as the user for this request
+	_, loggedIn, err := CheckUserThatIsLoggedIn((ctx))
+	if err != nil {
+		log.Printf("could not find a logged in user")
+		return nil, err
+	}
+
+	//try to fetch logged in user 
+	luser, err := u.GetByEmail(loggedIn.User.Email)
+	if err != nil {
+		log.Printf("could not find a logged in user with this email")
+		return nil, err
+	}
+
+	if luser.ID != userId {
+		log.Printf("user mismatch!! malicious attempt may have been attempted")
+		return nil, err
+	}
 
 	t := persistence.GetTokenRepository()
 	encKey := os.Getenv("ENCRYPTION_KEY")

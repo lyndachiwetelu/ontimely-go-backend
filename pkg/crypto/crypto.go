@@ -4,13 +4,15 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"encoding/base64"
 	"fmt"
-	config2 "github.com/antonioalfa22/go-rest-template/internal/pkg/config"
-	"github.com/dgrijalva/jwt-go"
-	"golang.org/x/crypto/bcrypt"
 	"io"
 	"log"
 	"time"
+
+	config2 "github.com/antonioalfa22/go-rest-template/internal/pkg/config"
+	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func encrypt(plaintext []byte, key []byte) ([]byte, error) {
@@ -63,11 +65,19 @@ func EncryptString(str string, withKey string) string {
 		return ""
 	}
 
-	return string(ciphertext)
+	b64Encrypted := base64.StdEncoding.EncodeToString(ciphertext)
+	return b64Encrypted
 }
 
 func DecryptString(str string, withKey string) string {
-	ciphertext := []byte(str)
+	// Decode the base64 encoded string
+	ciphertext, err := base64.StdEncoding.DecodeString(str)
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	// Decrypt the string
 	key := []byte(withKey)
 	decrypted, err := decrypt(ciphertext, key)
 	if err != nil {
@@ -76,6 +86,17 @@ func DecryptString(str string, withKey string) string {
 	}
 
 	return string(decrypted)
+
+	
+	// ciphertext := []byte(str)
+	// key := []byte(withKey)
+	// decrypted, err := decrypt(ciphertext, key)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return ""
+	// }
+
+	// return string(decrypted)
 }
 
 func HashAndSalt(pwd []byte) string {
