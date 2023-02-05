@@ -63,8 +63,8 @@ func (r *UserRepository) Query(q *models.User) (*[]models.User, error) {
 }
 
 func (r *UserRepository) Add(user *models.User) error {
-	Create(&user)
-	err := Save(&user)
+	err := Create(&user)
+	err = Save(&user)
 	return err
 }
 

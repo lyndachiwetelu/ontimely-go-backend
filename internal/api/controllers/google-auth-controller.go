@@ -41,31 +41,30 @@ func saveGoogleUser(user *GoogleUser) (bool, error) {
 	s := persistence.GetUserRepository()
 	userExists, err := s.GetByEmail(user.Email)
 	if err != nil {
-		log.Println("error fetching user")
+		log.Printf("error fetching user %v", err)
 		return false, nil
 	}
 
 	if userExists != nil {
 		userExists.Firstname = user.Given_name
 		userExists.Lastname = user.Family_name
-		userExists.LoginEmail = user.Email
 		userExists.LastLogin = time.Now()
 		userExists.LoginProvider = "google"
 		err := s.Add(userExists)
 
 		return true, err
-	} else {
-		var userToSave users.User
-		userToSave.ID = uuid.New()
-		userToSave.Firstname = user.Given_name
-		userToSave.Lastname = user.Family_name
-		userToSave.LoginEmail = user.Email
-		userToSave.LastLogin = time.Now()
-		userToSave.LoginProvider = "google"
-		err := s.Add(&userToSave)
-
-		return true, err
 	}
+
+	var userToSave users.User
+	userToSave.ID = uuid.New()
+	userToSave.Firstname = user.Given_name
+	userToSave.Lastname = user.Family_name
+	userToSave.LoginEmail = user.Email
+	userToSave.LastLogin = time.Now()
+	userToSave.LoginProvider = "google"
+	err = s.Add(&userToSave)
+
+	return true, err
 }
 
 func GoogleLogin(c *gin.Context) {
