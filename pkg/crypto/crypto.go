@@ -45,9 +45,12 @@ func decrypt(ciphertext []byte, key []byte) ([]byte, error) {
 	ciphertext = ciphertext[aes.BlockSize:]
 
 	stream := cipher.NewCFBDecrypter(block, iv)
-	stream.XORKeyStream(ciphertext, ciphertext)
 
-	return ciphertext, nil
+	// Create a new slice for the decrypted text
+	plaintext := make([]byte, len(ciphertext))
+	stream.XORKeyStream(plaintext, ciphertext)
+
+	return plaintext, nil
 }
 
 func EncryptString(str string, withKey string) string {
