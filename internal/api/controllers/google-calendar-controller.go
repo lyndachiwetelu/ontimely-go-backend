@@ -125,7 +125,7 @@ func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, error) {
 	}
 
 	u := persistence.GetUserRepository()
-	userIDStr := crypto.DecryptString(state, os.Getenv("ENCRYPTION_KEY"))
+	userIDStr := crypto.DecryptString(decodedState, os.Getenv("ENCRYPTION_KEY"))
 	userId, err := uuid.Parse(userIDStr)
 
 	if err != nil {
