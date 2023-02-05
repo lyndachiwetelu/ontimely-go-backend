@@ -39,11 +39,7 @@ type OntimelyClaims struct {
 
 func saveGoogleUser(user *GoogleUser) (bool, error) {
 	s := persistence.GetUserRepository()
-	userExists, err := s.GetByEmail(user.Email)
-	if err != nil {
-		log.Printf("error fetching user %v", err)
-		return false, nil
-	}
+	userExists, _ := s.GetByEmail(user.Email)
 
 	if userExists != nil {
 		userExists.Firstname = user.Given_name
