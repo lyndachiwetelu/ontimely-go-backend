@@ -8,11 +8,11 @@ import (
 
 type User struct {
 	models.Model
-	Username      string    `gorm:"column:username;unique_index:username" json:"username" form:"username"`
+	Username      string    `gorm:"column:username;" json:"username" form:"username"`
 	Firstname     string    `gorm:"column:firstname;not null;" json:"firstname" form:"firstname"`
 	Lastname      string    `gorm:"column:lastname;" json:"lastname" form:"lastname"`
 	PasswordHash  string    `gorm:"column:password;"`
-	LoginEmail    string    `gorm:"column:login_email;not null;" json:"email" form:"email"`
+	LoginEmail    string    `gorm:"column:login_email;not null;unique_index:email" json:"email" form:"email"`
 	LoginProvider string    `gorm:"column:login_provider;not null;" json:"provider" form:"provider"`
 	LastLogin     time.Time `gorm:"column:last_login;"`
 	Tokens        []tokens.Token
