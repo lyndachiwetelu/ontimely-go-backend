@@ -21,7 +21,7 @@ func (r *UserRepository) Get(id uuid.UUID) (*models.User, error) {
 	var user models.User
 	where := models.User{}
 	where.ID = id
-	_, err := First(&where, &user, []string{"Role"})
+	_, err := First(&where, &user, []string{})
 	if err != nil {
 		return nil, err
 	}
