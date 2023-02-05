@@ -58,7 +58,7 @@ func (r *UserRepository) All() (*[]models.User, error) {
 
 func (r *UserRepository) Query(q *models.User) (*[]models.User, error) {
 	var users []models.User
-	err := Find(&q, &users, []string{"Role"}, "id asc")
+	err := Find(&q, &users, []string{}, "id asc")
 	return &users, err
 }
 
