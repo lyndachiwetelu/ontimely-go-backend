@@ -38,6 +38,7 @@ type OntimelyClaims struct {
 }
 
 func saveGoogleUser(user *GoogleUser) (bool, error) {
+	var err error = nil
 	s := persistence.GetUserRepository()
 	userExists, _ := s.GetByEmail(user.Email)
 
