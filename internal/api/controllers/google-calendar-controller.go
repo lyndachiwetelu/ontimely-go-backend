@@ -74,7 +74,8 @@ func RequestPermission(ctx *gin.Context, userID uuid.UUID) {
 	}
 
 	userIDString := crypto.EncryptString(userID.String(), os.Getenv("ENCRYPTION_KEY"))
-	authURL := config.AuthCodeURL(userIDString, oauth2.AccessTypeOffline)
+	encodedUUID := url.QueryEscape(userIDString)
+	authURL := config.AuthCodeURL(encodedUUID, oauth2.AccessTypeOffline)
 
 	var response ConnectGoogleCalendarResponse
 	response.Url = authURL

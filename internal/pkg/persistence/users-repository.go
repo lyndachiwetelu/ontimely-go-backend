@@ -39,17 +39,6 @@ func (r *UserRepository) GetByEmail(email string) (*models.User, error) {
 	return &user, err
 }
 
-func (r *UserRepository) GetByUsername(username string) (*models.User, error) {
-	var user models.User
-	where := models.User{}
-	where.Username = username
-	_, err := First(&where, &user, []string{"Role"})
-	if err != nil {
-		return nil, err
-	}
-	return &user, err
-}
-
 func (r *UserRepository) All() (*[]models.User, error) {
 	var users []models.User
 	err := Find(&models.User{}, &users, []string{"Role"}, "id asc")
