@@ -4,8 +4,11 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
+	"os"
 
 	"github.com/antonioalfa22/go-rest-template/internal/pkg/persistence"
+	"github.com/antonioalfa22/go-rest-template/pkg/crypto"
 	"github.com/antonioalfa22/go-rest-template/pkg/http-err"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -51,7 +54,11 @@ func GetUserCalendars(c *gin.Context) {
 func GetUserCalendarByID(c *gin.Context) {
 	s := persistence.GetCalendarRepository()
 	id := c.Param("id")
-	calID, err := uuid.Parse(id)
+	idStr, _ := url.QueryUnescape(id)
+	encKey := os.Getenv("ENCRYPTION_KEY")
+	idUUID := crypto.DecryptString(idStr, encKey)
+
+	calID, err := uuid.Parse(idUUID)
 	if err != nil {
 		http_err.NewError(c, http.StatusBadRequest, errors.New("invalid request"))
 		c.AbortWithStatus(400)
