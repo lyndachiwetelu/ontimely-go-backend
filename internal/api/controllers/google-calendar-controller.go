@@ -263,7 +263,7 @@ func GetCalendarInformation(ctx *gin.Context, calendarInfo userCalendarResponseI
 	// }
 
 	//update it instead, consider not allowing this reconnection implicitly?
-	if calendarExists != nil {
+	if calendarExists != nil && err != nil {
 		calendarToSave.ID = calendarExists.ID
 	}
 
