@@ -54,7 +54,7 @@ func Setup() *gin.Engine {
 	{
 		authorized.POST("/calendar/google/add", controllers.ConnectGoogleCalendar)
 		authorized.GET("/user/connected-calendars", controllers.GetUserCalendars)
-		authorized.GET("/user/connected-calendars/:id", controllers.GetUserCalendarByID)
+		authorized.GET("/user/connected-calendars/id", controllers.GetUserCalendarByID)
 
 		authorized.POST("/calendar/outlook/add", controllers.GoogleLogin)
 	}

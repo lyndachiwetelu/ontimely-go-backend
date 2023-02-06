@@ -53,7 +53,7 @@ func GetUserCalendars(c *gin.Context) {
 
 func GetUserCalendarByID(c *gin.Context) {
 	s := persistence.GetCalendarRepository()
-	id := c.Param("id")
+	id := c.Query("id")
 	idStr, _ := url.QueryUnescape(id)
 	encKey := os.Getenv("ENCRYPTION_KEY")
 	idUUID := crypto.DecryptString(idStr, encKey)
