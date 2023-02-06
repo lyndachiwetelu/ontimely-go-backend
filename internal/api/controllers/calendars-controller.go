@@ -58,12 +58,29 @@ func GetUserCalendarByID(c *gin.Context) {
 		return
 	}
 
+	userID := c.GetString("LoggedInUserID")
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		http_err.NewError(c, http.StatusBadRequest, errors.New("no valid user"))
+		c.AbortWithStatus(400)
+		return
+	}
+
 	if calendar, err := s.Get(calID); err != nil {
 		http_err.NewError(c, http.StatusNotFound, errors.New("calendar not found"))
 		log.Println(err)
 		c.AbortWithStatus(404)
 		return
 	} else {
+		
+		if calendar.UserID != userUUID {
+			//check user ID matches
+			log.Println("the user requesting this calendar is not the calendar owner. request is forbidden")
+			http_err.NewError(c, http.StatusForbidden, errors.New("forbidden request"))
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+
 		c.JSON(http.StatusOK, calendar)
 	}
 }
