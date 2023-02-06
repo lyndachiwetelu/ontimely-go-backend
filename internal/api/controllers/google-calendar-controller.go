@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"time"
 
+	"github.com/antonioalfa22/go-rest-template/internal/pkg/models/calendars"
 	"github.com/antonioalfa22/go-rest-template/internal/pkg/models/tokens"
 	"github.com/antonioalfa22/go-rest-template/internal/pkg/persistence"
 	"github.com/antonioalfa22/go-rest-template/pkg/crypto"
@@ -26,12 +26,32 @@ import (
 const credentialsPath = "calendar-credentials.json"
 
 type GoogleCalendar struct {
-	Name  string `json:"name" binding:"required"`
-	Email string `json:"email" binding:"required"`
+	Name            string `json:"name" binding:"required"`
+	Email           string `json:"email" binding:"required"`
+	AccessRole      string `json:"accessRole,omitempty"`
+	BackgroundColor string `json:"backgroundColor,omitempty"`
+	Deleted         bool   `json:"deleted,omitempty"`
+	Description     string `json:"description,omitempty"`
+	Etag            string `json:"etag,omitempty"`
+	ForegroundColor string `json:"foregroundColor,omitempty"`
+	Hidden          bool   `json:"hidden,omitempty"`
+	CalendarId      string `json:"id,omitempty"`
+	Kind            string `json:"kind,omitempty"`
+	Location        string `json:"location,omitempty"`
+	Primary         bool   `json:"primary,omitempty"`
+	Summary         string `json:"summary,omitempty"`
+	TimeZone        string `json:"timeZone,omitempty"`
+	CalendarType    string `json:"type,omitempty"`
 }
 
 type ConnectGoogleCalendarResponse struct {
 	Url string `json:"url" binding:"required"`
+}
+
+type userCalendarResponseInfoDTO struct {
+	userID  uuid.UUID
+	tokenID uuid.UUID
+	token   oauth2.Token
 }
 
 func ConnectGoogleCalendar(ctx *gin.Context) {
@@ -87,18 +107,23 @@ func RequestPermission(ctx *gin.Context, userID uuid.UUID) {
 
 func HandleGoogleAuthorizeCalendar(ctx *gin.Context) {
 	appUrl := os.Getenv("APP_URL")
-	token, err := handleGoogleAuthorize(ctx)
+	token, userID, tokenID, err := handleGoogleAuthorize(ctx)
 
 	if err != nil {
 		log.Printf("unable to get user token %v", err)
 		ctx.Redirect(302, appUrl)
 	}
 
-	GetCalendarInformation(ctx, token)
+	var calendarInfo userCalendarResponseInfoDTO
+	calendarInfo.token = *token
+	calendarInfo.userID = *userID
+	calendarInfo.tokenID = *tokenID
+
+	GetCalendarInformation(ctx, calendarInfo)
 	ctx.Redirect(302, appUrl+"/user/dashboard/calendar/connected")
 }
 
-func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, error) {
+func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, *uuid.UUID, *uuid.UUID, error) {
 	b, _ := os.ReadFile(credentialsPath)
 	code := ctx.Query("code")
 	state := ctx.Query("state")
@@ -109,12 +134,12 @@ func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, error) {
 
 	if code == "" {
 		err := errors.New("no code")
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	if decodedState == "" {
 		err := errors.New("no state parameter. invalid request")
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	config, _ := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
@@ -122,7 +147,7 @@ func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, error) {
 	tok, err := config.Exchange(context.TODO(), code)
 	if err != nil {
 		log.Printf("Unable to retrieve token from web: %v", err)
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	u := persistence.GetUserRepository()
@@ -131,30 +156,30 @@ func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, error) {
 
 	if err != nil {
 		log.Printf("uuid parsing error: %v", err)
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	user, err := u.Get(userId)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 	// checkLogged in user is the same as the user for this request
 	_, loggedIn, err := CheckUserThatIsLoggedIn((ctx))
 	if err != nil {
 		log.Printf("could not find a logged in user")
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	//try to fetch logged in user 
+	//try to fetch logged in user
 	luser, err := u.GetByEmail(loggedIn.User.Email)
 	if err != nil {
 		log.Printf("could not find a logged in user with this email")
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	if luser.ID != userId {
 		log.Printf("user mismatch!! malicious attempt may have been attempted")
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	t := persistence.GetTokenRepository()
@@ -172,43 +197,89 @@ func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, error) {
 		log.Printf("Unable to save token for user: %v", err)
 	}
 
-	return tok, nil
+	return tok, &userId, &userToken.ID, nil
 }
 
-func GetCalendarInformation(ctx *gin.Context, tok *oauth2.Token) {
-	//get user token, request calendar info
+func GetCalendarInformation(ctx *gin.Context, calendarInfo userCalendarResponseInfoDTO) {
+	// with the user token, request the calendar and save it.
+	tok := calendarInfo.token
 
 	b, err := os.ReadFile(credentialsPath)
 	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
+		log.Printf("Unable to read client secret file: %v", err)
+		return
 	}
 
 	config, _ := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
-	client := getClientForUser(config, tok)
+	client := getClientForUser(config, &tok)
 
 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
-		log.Fatalf("Unable to retrieve Calendar client: %v", err)
+		log.Printf("Unable to retrieve Calendar client: %v", err)
+		return
 	}
 
-	t := time.Now().Format(time.RFC3339)
-	events, err := srv.Events.List("primary").ShowDeleted(false).
-		SingleEvents(true).TimeMin(t).MaxResults(10).OrderBy("startTime").Do()
+	calendar, err := srv.CalendarList.Get("primary").Do()
+
+	if err == nil {
+		log.Printf("Unable to retrieve Primary Calendar for user, error occurred %v", err)
+		return
+	}
+
+	if calendar == nil {
+		log.Println("Unable to retrieve Primary Calendar for user")
+		return
+	}
+
+	var calendarToSave calendars.Calendar
+	calendarSummary := calendar.Summary
+	if len(calendar.SummaryOverride) > 0 {
+		calendarSummary = calendar.SummaryOverride
+	}
+	calendarToSave.AccessRole = calendar.AccessRole
+	calendarToSave.CalendarId = calendar.Id
+	calendarToSave.BackgroundColor = calendar.BackgroundColor
+	calendarToSave.TimeZone = calendar.TimeZone
+	calendarToSave.Deleted = calendar.Deleted
+	calendarToSave.Description = calendar.Description
+	calendarToSave.Kind = calendar.Kind
+	calendarToSave.ForegroundColor = calendar.ForegroundColor
+	calendarToSave.Location = calendar.Location
+	calendarToSave.Summary = calendarSummary
+	calendarToSave.Primary = calendar.Primary
+	calendarToSave.CalendarType = "Google"
+	calendarToSave.ID = uuid.New()
+	calendarToSave.TokenID = calendarInfo.tokenID
+	calendarToSave.UserID = calendarInfo.userID
+
+	s := persistence.GetCalendarRepository()
+	err = s.Add(&calendarToSave)
 	if err != nil {
-		log.Fatalf("Unable to retrieve next ten of the user's events: %v", err)
+		log.Println("Unable to retrieve save calendar for user")
+		return
 	}
 
-	fmt.Println("Upcoming events:")
-	if len(events.Items) == 0 {
-		fmt.Println("No upcoming events found.")
-	} else {
-		for _, item := range events.Items {
-			date := item.Start.DateTime
-			if date == "" {
-				date = item.Start.Date
-			}
-			fmt.Printf("%v (%v)\n", item.Summary, date)
-		}
-	}
+	// get and save primary calendar
+
+	// t := time.Now().Format(time.RFC3339)
+	// events, err := srv.Events.List("primary").ShowDeleted(false).
+	// 	SingleEvents(true).TimeMin(t).MaxResults(10).OrderBy("startTime").Do()
+	// if err != nil {
+	// 	log.Printf("Unable to retrieve next ten of the user's events: %v", err)
+	// 	return
+	// }
+
+	// fmt.Println("Upcoming events:")
+	// if len(events.Items) == 0 {
+	// 	fmt.Println("No upcoming events found.")
+	// } else {
+	// 	for _, item := range events.Items {
+	// 		date := item.Start.DateTime
+	// 		if date == "" {
+	// 			date = item.Start.Date
+	// 		}
+	// 		fmt.Printf("%v (%v)\n", item.Summary, date)
+	// 	}
+	// }
 
 }

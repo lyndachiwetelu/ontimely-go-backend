@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/antonioalfa22/go-rest-template/internal/pkg/config"
+	"github.com/antonioalfa22/go-rest-template/internal/pkg/models/calendars"
 	"github.com/antonioalfa22/go-rest-template/internal/pkg/models/tokens"
 	"github.com/antonioalfa22/go-rest-template/internal/pkg/models/users"
 	"github.com/jinzhu/gorm"
@@ -58,6 +59,10 @@ func migration() {
 	}
 	if (!DB.HasTable(&tokens.Token{})) {
 		DB.CreateTable(&tokens.Token{})
+	}
+
+	if (!DB.HasTable(&calendars.Calendar{})) {
+		DB.CreateTable(&calendars.Calendar{})
 	}
 
 	DB.AutoMigrate(&tokens.Token{})

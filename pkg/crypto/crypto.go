@@ -87,7 +87,6 @@ func DecryptString(str string, withKey string) string {
 
 	return string(decrypted)
 
-	
 	// ciphertext := []byte(str)
 	// key := []byte(withKey)
 	// decrypted, err := decrypt(ciphertext, key)
