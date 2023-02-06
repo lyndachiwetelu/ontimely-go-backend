@@ -4,7 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"net/url"
+	// "net/url"
 	"os"
 
 	"github.com/antonioalfa22/go-rest-template/internal/pkg/persistence"
