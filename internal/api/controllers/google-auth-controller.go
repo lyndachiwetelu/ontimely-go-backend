@@ -19,7 +19,7 @@ import (
 	"google.golang.org/api/idtoken"
 )
 
-type GoogleUser struct {
+type OntimelyUser struct {
 	Name           string `json:"name" binding:"required"`
 	Email          string `json:"email" binding:"required"`
 	Profile        string `json:"profile" binding:"required"`
@@ -33,11 +33,11 @@ type GoogleAuthResult struct {
 }
 
 type OntimelyClaims struct {
-	User GoogleUser `json:"user"`
+	User OntimelyUser `json:"user"`
 	jwt.RegisteredClaims
 }
 
-func saveGoogleUser(user *GoogleUser) (bool, error) {
+func saveGoogleUser(user *OntimelyUser) (bool, error) {
 	var err error = nil
 	s := persistence.GetUserRepository()
 	userExists, _ := s.GetByEmail(user.Email)
@@ -129,7 +129,7 @@ func SetCookieHandler(w http.ResponseWriter, r *http.Request, domain string, nam
 	http.SetCookie(w, &cookie)
 }
 
-func verifyToken(token string) (*GoogleUser, error) {
+func verifyToken(token string) (*OntimelyUser, error) {
 	ctx := context.Background()
 	audience := os.Getenv("GOOGLE_CLIENT_ID")
 
@@ -139,7 +139,7 @@ func verifyToken(token string) (*GoogleUser, error) {
 		return nil, errors.New("error occurred: invalid_tkn")
 	}
 
-	var user GoogleUser
+	var user OntimelyUser
 	user.Email = payload.Claims["email"].(string)
 	user.Name = payload.Claims["name"].(string)
 	user.Family_name = payload.Claims["family_name"].(string)
@@ -149,7 +149,7 @@ func verifyToken(token string) (*GoogleUser, error) {
 	return &user, nil
 }
 
-func buildJwtTokenForUser(user *GoogleUser) (string, error) {
+func buildJwtTokenForUser(user *OntimelyUser) (string, error) {
 	secret := []byte(os.Getenv("JWT_SECRET"))
 	// Create the claims
 	claims := OntimelyClaims{

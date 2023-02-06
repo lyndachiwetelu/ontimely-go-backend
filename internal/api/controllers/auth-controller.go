@@ -11,7 +11,7 @@ import (
 )
 
 type LoggedInUser struct {
-	User GoogleUser `json:"user" binding:"required"`
+	User OntimelyUser `json:"user" binding:"required"`
 }
 
 func CheckUserThatIsLoggedIn(c *gin.Context) (int, *LoggedInUser, error) {
@@ -50,7 +50,7 @@ func ValidateLoggedIn(c *gin.Context) {
 	c.JSON(200, gin.H{"data": *loogedInUser})
 }
 
-func parseJwtTokenForLoggedInUser(tokenString string) (*GoogleUser, error) {
+func parseJwtTokenForLoggedInUser(tokenString string) (*OntimelyUser, error) {
 
 	secret := []byte(os.Getenv("JWT_SECRET"))
 

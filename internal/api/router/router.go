@@ -46,17 +46,22 @@ func Setup() *gin.Engine {
 	app.POST("/auth/login/google", controllers.GoogleLogin)
 	app.POST("/auth/login/validate", controllers.ValidateLoggedIn)
 
-	// ================== Api Calendar Auth Routes
-	app.POST("/auth/share-calendar/google", controllers.GoogleLogin)
-	app.POST("/auth/share-calendar/outlook", controllers.GoogleLogin)
-
-	// ================== Calendar Routes
-	app.POST("/calendar/google/add", controllers.ConnectGoogleCalendar)
+	// ================== Api Calendar Routes
 	app.GET("/calendar/authorize/google", controllers.HandleGoogleAuthorizeCalendar)
-	app.POST("/calendar/outlook/add", controllers.GoogleLogin)
+
+	
+	authorized := app.Group("/")
+	authorized.Use(middlewares.LoginRequired())
+	{
+		authorized.POST("/calendar/google/add", controllers.ConnectGoogleCalendar)
+		authorized.GET("/user/connected-calendars", controllers.GetUserCalendars)
+		authorized.GET("/user/connected-calendars/:id", controllers.GetUserCalendarByID)
+
+		authorized.POST("/calendar/outlook/add", controllers.GoogleLogin)
+	}
 
 	// ================== Docs Routes
-	app.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	app.GET("/documentation-route/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return app
 }
