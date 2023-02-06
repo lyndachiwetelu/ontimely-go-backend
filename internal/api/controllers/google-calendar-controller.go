@@ -119,8 +119,15 @@ func HandleGoogleAuthorizeCalendar(ctx *gin.Context) {
 	calendarInfo.userID = *userID
 	calendarInfo.tokenID = *tokenID
 
-	GetCalendarInformation(ctx, calendarInfo)
-	ctx.Redirect(302, appUrl+"/user/dashboard/calendar/connected")
+	calendarID := GetCalendarInformation(ctx, calendarInfo)
+	if calendarID == nil {
+		ctx.Redirect(302, fmt.Sprintf("%s/user/dashboard/calendar/failed", appUrl))
+		return
+	}
+
+	encKey := os.Getenv("ENCRYPTION_KEY")
+	calendarIDEncrypted := crypto.EncryptString(url.QueryEscape(calendarID.String()), encKey)
+	ctx.Redirect(302, fmt.Sprintf("%s/user/dashboard/calendar/connected?rd=%s", appUrl, calendarIDEncrypted))
 }
 
 func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, *uuid.UUID, *uuid.UUID, error) {
@@ -200,14 +207,14 @@ func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, *uuid.UUID, *uuid.U
 	return tok, &userId, &userToken.ID, nil
 }
 
-func GetCalendarInformation(ctx *gin.Context, calendarInfo userCalendarResponseInfoDTO) {
+func GetCalendarInformation(ctx *gin.Context, calendarInfo userCalendarResponseInfoDTO) *uuid.UUID {
 	// with the user token, request the calendar and save it.
 	tok := calendarInfo.token
 
 	b, err := os.ReadFile(credentialsPath)
 	if err != nil {
 		log.Printf("Unable to read client secret file: %v", err)
-		return
+		return nil
 	}
 
 	config, _ := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
@@ -216,19 +223,19 @@ func GetCalendarInformation(ctx *gin.Context, calendarInfo userCalendarResponseI
 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
 		log.Printf("Unable to retrieve Calendar client: %v", err)
-		return
+		return nil
 	}
 
 	calendar, err := srv.CalendarList.Get("primary").Do()
 
 	if err != nil {
 		log.Printf("Unable to retrieve Primary Calendar for user, error occurred %v", err)
-		return
+		return nil
 	}
 
 	if calendar == nil {
 		log.Println("Unable to retrieve Primary Calendar for user")
-		return
+		return nil
 	}
 
 	var calendarToSave calendars.Calendar
@@ -269,8 +276,10 @@ func GetCalendarInformation(ctx *gin.Context, calendarInfo userCalendarResponseI
 	err = s.Add(&calendarToSave)
 	if err != nil {
 		log.Printf("Unable to save calendar for user %v", err)
-		return
+		return nil
 	}
+
+	return &calendarToSave.ID
 
 	// get and save primary calendar
 

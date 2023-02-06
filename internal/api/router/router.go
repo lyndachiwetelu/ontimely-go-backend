@@ -49,7 +49,6 @@ func Setup() *gin.Engine {
 	// ================== Api Calendar Routes
 	app.GET("/calendar/authorize/google", controllers.HandleGoogleAuthorizeCalendar)
 
-	
 	authorized := app.Group("/")
 	authorized.Use(middlewares.LoginRequired())
 	{

@@ -72,7 +72,7 @@ func GetUserCalendarByID(c *gin.Context) {
 		c.AbortWithStatus(404)
 		return
 	} else {
-		
+
 		if calendar.UserID != userUUID {
 			//check user ID matches
 			log.Println("the user requesting this calendar is not the calendar owner. request is forbidden")
