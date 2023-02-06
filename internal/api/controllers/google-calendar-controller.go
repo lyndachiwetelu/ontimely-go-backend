@@ -255,12 +255,12 @@ func GetCalendarInformation(ctx *gin.Context, calendarInfo userCalendarResponseI
 	s := persistence.GetCalendarRepository()
 
 	//check if type exists
-	calendarExists, err := s.GetExistingType("Google", calendarInfo.userID, calendar.Id)
+	calendarExists, _ := s.GetExistingType("Google", calendarInfo.userID, calendar.Id)
 
-	if err != nil {
-		log.Printf("Unable to check if Primary Calendar for user exists, error occurred %v", err)
-		return
-	}
+	// if err != nil {
+	// 	log.Printf("Unable to check if Primary Calendar for user exists, error occurred %v", err)
+	// 	return
+	// }
 
 	//update it instead, consider not allowing this reconnection implicitly?
 	if calendarExists != nil {
