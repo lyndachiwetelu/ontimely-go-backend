@@ -221,7 +221,7 @@ func GetCalendarInformation(ctx *gin.Context, calendarInfo userCalendarResponseI
 
 	calendar, err := srv.CalendarList.Get("primary").Do()
 
-	if err == nil {
+	if err != nil {
 		log.Printf("Unable to retrieve Primary Calendar for user, error occurred %v", err)
 		return
 	}
