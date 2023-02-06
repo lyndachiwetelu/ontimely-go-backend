@@ -16,6 +16,19 @@ func GetCalendarRepository() *CalendarRepository {
 	return calendarRepository
 }
 
+func (r *CalendarRepository) GetExistingType(calendarType string, userID uuid.UUID, calendarID string) (*models.Calendar, error) {
+	var calendar models.Calendar
+	where := models.Calendar{}
+	where.Hidden = false
+	where.Deleted = false
+	where.UserID = userID
+	where.CalendarType = calendarType
+	where.CalendarId = calendarID
+
+	_, err := First(where, &calendar, []string{})
+	return &calendar, err
+}
+
 func (r *CalendarRepository) GetForUser(userID uuid.UUID) (*[]models.Calendar, error) {
 	var calendars []models.Calendar
 	where := models.Calendar{}

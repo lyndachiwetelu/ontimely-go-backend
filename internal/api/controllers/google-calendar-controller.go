@@ -253,6 +253,20 @@ func GetCalendarInformation(ctx *gin.Context, calendarInfo userCalendarResponseI
 	calendarToSave.UserID = calendarInfo.userID
 
 	s := persistence.GetCalendarRepository()
+
+	//check if type exists
+	calendarExists, err := s.GetExistingType("Google", calendarInfo.userID, calendar.Id)
+
+	if err != nil {
+		log.Printf("Unable to check if Primary Calendar for user exists, error occurred %v", err)
+		return
+	}
+
+	//update it instead, consider not allowing this reconnection implicitly?
+	if calendarExists != nil {
+		calendarToSave.ID = calendarExists.ID
+	}
+
 	err = s.Add(&calendarToSave)
 	if err != nil {
 		log.Println("Unable to retrieve save calendar for user")
