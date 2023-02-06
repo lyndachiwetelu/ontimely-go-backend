@@ -269,7 +269,7 @@ func GetCalendarInformation(ctx *gin.Context, calendarInfo userCalendarResponseI
 
 	err = s.Add(&calendarToSave)
 	if err != nil {
-		log.Println("Unable to retrieve save calendar for user")
+		log.Printf("Unable to save calendar for user %v", err)
 		return
 	}
 
