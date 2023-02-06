@@ -54,12 +54,13 @@ func GetUserCalendars(c *gin.Context) {
 func GetUserCalendarByID(c *gin.Context) {
 	s := persistence.GetCalendarRepository()
 	id := c.Query("id")
-	idStr, _ := url.QueryUnescape(id)
+	// idStr, _ := url.QueryUnescape(id)
 	encKey := os.Getenv("ENCRYPTION_KEY")
-	idUUID := crypto.DecryptString(idStr, encKey)
+	idUUID := crypto.DecryptString(id, encKey)
 
 	calID, err := uuid.Parse(idUUID)
 	if err != nil {
+		log.Printf("%v", err)
 		http_err.NewError(c, http.StatusBadRequest, errors.New("invalid calendar id in request"))
 		c.AbortWithStatus(400)
 		return

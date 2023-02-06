@@ -86,16 +86,6 @@ func DecryptString(str string, withKey string) string {
 	}
 
 	return string(decrypted)
-
-	// ciphertext := []byte(str)
-	// key := []byte(withKey)
-	// decrypted, err := decrypt(ciphertext, key)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return ""
-	// }
-
-	// return string(decrypted)
 }
 
 func HashAndSalt(pwd []byte) string {
