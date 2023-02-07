@@ -58,6 +58,8 @@ func GetUserCalendarByID(c *gin.Context) {
 	encKey := os.Getenv("ENCRYPTION_KEY")
 	idUUID := crypto.DecryptString(idStr, encKey)
 
+	log.Printf("idUUID %s",idUUID)
+
 	calID, err := uuid.Parse(idUUID)
 	if err != nil {
 		log.Printf("%v", err)
