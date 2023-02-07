@@ -25,8 +25,9 @@ type Calendar struct {
 	Summary         string    `gorm:"column:summary;" json:"summary"`
 	TimeZone        string    `gorm:"column:timezone;not null;" json:"timeZone"`
 	CalendarType    string    `gorm:"column:calendar_type;not null;" json:"type"`
-	TokenID         uuid.UUID `gorm:"column:token_id;not null;"`
-	UserID          uuid.UUID `gorm:"column:user_id;not null;"`
+	Category        string    `gorm:"column:category;" json:"category"`
+	TokenID         uuid.UUID `gorm:"column:token_id;not null;" json:"-"`
+	UserID          uuid.UUID `gorm:"column:user_id;not null;" json:"-"`
 }
 
 func (m *Calendar) BeforeCreate() error {

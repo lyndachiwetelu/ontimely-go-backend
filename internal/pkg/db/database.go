@@ -65,6 +65,7 @@ func migration() {
 		DB.CreateTable(&calendars.Calendar{})
 	}
 
+	DB.AutoMigrate(&calendars.Calendar{})
 	DB.AutoMigrate(&tokens.Token{})
 	DB.AutoMigrate(&users.User{})
 	DB.Model(&users.User{}).Related(&tokens.Token{})
