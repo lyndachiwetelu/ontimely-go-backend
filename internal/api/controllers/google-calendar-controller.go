@@ -126,8 +126,8 @@ func HandleGoogleAuthorizeCalendar(ctx *gin.Context) {
 	}
 
 	encKey := os.Getenv("ENCRYPTION_KEY")
-	calendarIDEncrypted := crypto.EncryptString(url.QueryEscape(calendarID.String()), encKey)
-	ctx.Redirect(302, fmt.Sprintf("%s/user/dashboard/calendar/connected?rd=%s", appUrl, calendarIDEncrypted))
+	calendarIDEncrypted := crypto.EncryptString(calendarID.String(), encKey)
+	ctx.Redirect(302, fmt.Sprintf("%s/user/dashboard/calendar/connected?rd=%s", appUrl, url.QueryEscape(calendarIDEncrypted)))
 }
 
 func handleGoogleAuthorize(ctx *gin.Context) (*oauth2.Token, *uuid.UUID, *uuid.UUID, error) {
