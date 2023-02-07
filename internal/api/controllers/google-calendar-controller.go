@@ -127,7 +127,7 @@ func HandleGoogleAuthorizeCalendar(ctx *gin.Context) {
 
 	encKey := os.Getenv("ENCRYPTION_KEY")
 	calendarIDEncrypted := crypto.EncryptString(calendarID.String(), encKey)
-	log.Printf("idUUID sending %s, encrypted %s",calendarID.String(), calendarIDEncrypted)
+	// log.Printf("idUUID sending %s, encrypted %s",calendarID.String(), calendarIDEncrypted)
 	ctx.Redirect(302, fmt.Sprintf("%s/user/dashboard/calendar/connected?rd=%s", appUrl, url.QueryEscape(calendarIDEncrypted)))
 }
 

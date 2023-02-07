@@ -48,7 +48,7 @@ func LoginRequired() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("LoggedInUserID", userInDB.ID)
+		c.Set("LoggedInUserID", userInDB.ID.String())
 		c.Next()
 	}
 }

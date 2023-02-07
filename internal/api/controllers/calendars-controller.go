@@ -62,7 +62,7 @@ func GetUserCalendarByID(c *gin.Context) {
 	encKey := os.Getenv("ENCRYPTION_KEY")
 	idUUID := crypto.DecryptString(decodedId, encKey)
 
-	log.Printf("idUUID %s original id encrypted %s",idUUID, id)
+	// log.Printf("idUUID %s original id encrypted %s",idUUID, id)
 
 	calID, err := uuid.Parse(idUUID)
 	if err != nil {
@@ -75,6 +75,7 @@ func GetUserCalendarByID(c *gin.Context) {
 	userID := c.GetString("LoggedInUserID")
 	userUUID, err := uuid.Parse(userID)
 	if err != nil {
+		log.Printf("%v", err)
 		http_err.NewError(c, http.StatusBadRequest, errors.New("no valid user"))
 		c.AbortWithStatus(400)
 		return
