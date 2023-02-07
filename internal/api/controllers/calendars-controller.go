@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -54,11 +55,14 @@ func GetUserCalendars(c *gin.Context) {
 func GetUserCalendarByID(c *gin.Context) {
 	s := persistence.GetCalendarRepository()
 	id := c.Query("id")
-	idStr, _ := url.QueryUnescape(id)
+	decodedId, err := url.QueryUnescape(id)
+	if err != nil {
+		fmt.Printf("decoding state error %v", err)
+	}
 	encKey := os.Getenv("ENCRYPTION_KEY")
-	idUUID := crypto.DecryptString(idStr, encKey)
+	idUUID := crypto.DecryptString(decodedId, encKey)
 
-	log.Printf("idUUID %s",idUUID)
+	log.Printf("idUUID %s original id encrypted %s",idUUID, id)
 
 	calID, err := uuid.Parse(idUUID)
 	if err != nil {
