@@ -61,12 +61,12 @@ func GetUserCalendars(c *gin.Context) {
 func GetUserCalendarByID(c *gin.Context) {
 	s := persistence.GetCalendarRepository()
 	id := c.Query("id")
-	decodedId, err := url.PathUnescape(id)
-	if err != nil {
-		fmt.Printf("decoding state error %v", err)
-	}
+	// decodedId, err := url.PathUnescape(id)
+	// if err != nil {
+	// 	fmt.Printf("decoding state error %v", err)
+	// }
 	encKey := os.Getenv("ENCRYPTION_KEY")
-	idUUID := crypto.DecryptString(decodedId, encKey)
+	idUUID := crypto.DecryptString(id, encKey)
 
 	log.Printf("idUUID %s original id encrypted %s",idUUID, id)
 
