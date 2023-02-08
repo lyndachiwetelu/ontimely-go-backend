@@ -61,7 +61,7 @@ func GetUserCalendars(c *gin.Context) {
 func GetUserCalendarByID(c *gin.Context) {
 	s := persistence.GetCalendarRepository()
 	id := c.Query("id")
-	decodedId, err := url.QueryUnescape(id)
+	decodedId, err := url.PathUnescape(id)
 	if err != nil {
 		fmt.Printf("decoding state error %v", err)
 	}
