@@ -2,14 +2,10 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
-	"net/url"
-	"os"
 
 	"github.com/antonioalfa22/go-rest-template/internal/pkg/persistence"
-	"github.com/antonioalfa22/go-rest-template/pkg/crypto"
 	"github.com/antonioalfa22/go-rest-template/pkg/http-err"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -65,12 +61,12 @@ func GetUserCalendarByID(c *gin.Context) {
 	// if err != nil {
 	// 	fmt.Printf("decoding state error %v", err)
 	// }
-	encKey := os.Getenv("ENCRYPTION_KEY")
-	idUUID := crypto.DecryptString(id, encKey)
+	// encKey := os.Getenv("ENCRYPTION_KEY")
+	// idUUID := crypto.DecryptString(id, encKey)
 
-	log.Printf("idUUID %s original id encrypted %s",idUUID, id)
+	// log.Printf("idUUID %s original id encrypted %s",idUUID, id)
 
-	calID, err := uuid.Parse(idUUID)
+	calID, err := uuid.Parse(id)
 	if err != nil {
 		log.Printf("%v", err)
 		http_err.NewError(c, http.StatusBadRequest, errors.New("invalid calendar id in request"))
@@ -159,15 +155,15 @@ func UpdateUserCalendarDetail(c *gin.Context) {
 }
 
 func decryptCalendarIdFromRequest(id string) (*uuid.UUID, error) {
-	decodedId, err := url.QueryUnescape(id)
-	if err != nil {
-		fmt.Printf("decoding state error %v", err)
-		return nil, err
-	}
-	encKey := os.Getenv("ENCRYPTION_KEY")
-	idUUID := crypto.DecryptString(decodedId, encKey)
+	// decodedId, err := url.QueryUnescape(id)
+	// if err != nil {
+	// 	fmt.Printf("decoding state error %v", err)
+	// 	return nil, err
+	// }
+	// encKey := os.Getenv("ENCRYPTION_KEY")
+	// idUUID := crypto.DecryptString(decodedId, encKey)
 
-	calID, err := uuid.Parse(idUUID)
+	calID, err := uuid.Parse(id)
 	if err != nil {
 		log.Printf("%v", err)
 		return nil, err
