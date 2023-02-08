@@ -11,7 +11,7 @@ type Calendar struct {
 	models.Model
 	Name            string    `gorm:"column:name;not null;" json:"name" form:"name"`
 	Email           string    `gorm:"column:email;" json:"email" form:"email"`
-	AccessRole      string    `gorm:"column:access_role;" json:"accessRole" form:"accessroles"`
+	AccessRole      string    `gorm:"column:access_role;" json:"-" form:"accessroles"`
 	BackgroundColor string    `gorm:"column:background_color;" json:"backgroundColor" form:"backgroundColor"`
 	Deleted         bool      `gorm:"column:deleted;" json:"deleted"`
 	Description     string    `gorm:"column:description;" json:"description"`
@@ -23,7 +23,7 @@ type Calendar struct {
 	Location        string    `gorm:"column:location;" json:"location"`
 	Primary         bool      `gorm:"column:is_primary;" json:"primary"`
 	Summary         string    `gorm:"column:summary;" json:"summary"`
-	TimeZone        string    `gorm:"column:timezone;not null;" json:"timeZone"`
+	TimeZone        string    `gorm:"column:timezone;not null;" json:"timezone"`
 	CalendarType    string    `gorm:"column:calendar_type;not null;" json:"type"`
 	Category        string    `gorm:"column:category;" json:"category"`
 	TokenID         uuid.UUID `gorm:"column:token_id;not null;" json:"-"`
